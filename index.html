@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repaso: Sistemas de Gestión de Seguridad</title>
+    <style>
+        :root {
+            --primary: #003366; /* Azul Oscuro */
+            --secondary: #00509e; /* Azul Medio */
+            --accent: #d4af37; /* Dorado */
+            --text: #333;
+            --bg: #f4f4f4;
+            --card-front: #ffffff;
+            --card-back: #003366;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 650px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        p.subtitle {
+            color: #666;
+            margin: 5px 0 0 0;
+            font-size: 1rem;
+        }
+
+        /* Escenario 3D */
+        .scene {
+            width: 100%;
+            height: 320px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            box-sizing: border-box;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        /* Frente */
+        .card-front {
+            background-color: var(--card-front);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .card-front h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .card-front p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .hint {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--secondary);
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        /* Dorso */
+        .card-back {
+            background-color: var(--card-back);
+            color: white;
+            transform: rotateY(180deg);
+            border: 2px solid var(--accent);
+        }
+
+        .card-back p {
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+
+        /* Controles */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .counter {
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: var(--text);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Barra de Progreso */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: #ddd;
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent);
+            width: 4%;
+            transition: width 0.3s ease;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Sistemas de Gestión</h1>
+            <p class="subtitle">Repaso de Conceptos Clave (Clase 01 y 02)</p>
+        </header>
+
+        <div class="scene" onclick="flipCard()">
+            <div class="card" id="flashcard">
+                <div class="card-face card-front">
+                    <h3>Pregunta</h3>
+                    <p id="frontText">Cargando...</p>
+                    <div class="hint">Clic para girar</div>
+                </div>
+                <div class="card-face card-back">
+                    <p id="backText">Cargando...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="controls">
+            <button onclick="prevCard()">&#8592; Anterior</button>
+            <div class="counter" id="counter">1 / 25</div>
+            <button onclick="nextCard()">Siguiente &#8594;</button>
+        </div>
+    </div>
+
+    <script>
+        const cards = [
+            { q: "¿Qué es un Sistema de Gestión?", a: "Es la estructura organizada (procesos, políticas y procedimientos) para dirigir y controlar una organización hacia sus objetivos." },
+            { q: "¿Qué caracteriza a la 'Seguridad por Intuición'?", a: "Se basa en el 'olfato', la costumbre o la improvisación, sin respaldo de datos ni métodos probados." },
+            { q: "¿Qué caracteriza a la 'Seguridad basada en Estándares'?", a: "Utiliza metodologías validadas globalmente, permitiendo resultados repetibles, medibles y justificables." },
+            { q: "¿Qué significan las siglas PHVA (o PDCA)?", a: "Planificar (Plan), Hacer (Do), Verificar (Check), Actuar (Act)." },
+            { q: "¿Qué ocurre en la fase 'Planificar' del ciclo PHVA?", a: "Se establecen los objetivos y se definen los procesos necesarios para conseguir los resultados." },
+            { q: "¿Qué ocurre en la fase 'Verificar' del ciclo PHVA?", a: "Se realiza el seguimiento y la medición de los procesos respecto a las políticas y objetivos." },
+            { q: "¿Qué es un Estándar?", a: "Un documento establecido por consenso que ofrece reglas y guías para hacer algo de forma repetible y óptima." },
+            { q: "¿Cómo define ISO 31000 el 'Riesgo'?", a: "El efecto de la incertidumbre sobre los objetivos." },
+            { q: "¿Qué es la 'Incertidumbre'?", a: "La falta de información completa o conocimiento sobre un evento, su consecuencia o probabilidad." },
+            { q: "¿Qué es el 'Efecto' en el riesgo?", a: "Una desviación de lo esperado. Puede ser negativa (amenaza) o positiva (oportunidad)." },
+            { q: "¿Cuál es el propósito principal de la Gestión de Riesgos?", a: "La creación y protección del valor." },
+            { q: "¿Qué es el 'Contexto Externo'?", a: "El entorno cultural, social, político, legal y económico fuera de la organización que la afecta." },
+            { q: "¿Qué es una 'Parte Interesada' (Stakeholder)?", a: "Persona u organización que puede afectar, verse afectada o percibirse afectada por una decisión." },
+            { q: "¿Qué es el 'Apetito de Riesgo'?", a: "La cantidad y tipo de riesgo que una organización está dispuesta a aceptar para lograr sus objetivos." },
+            { q: "¿Cuáles son las 3 etapas del Proceso de Evaluación del Riesgo?", a: "1. Identificación<br>2. Análisis<br>3. Valoración (Evaluación)." },
+            { q: "¿Qué sucede en la etapa de 'Identificación'?", a: "Se busca, reconoce y describe los riesgos que pueden ayudar o impedir lograr los objetivos." },
+            { q: "¿Qué dos factores componen el Análisis de Riesgo?", a: "La Probabilidad (posibilidad de ocurrencia) y la Consecuencia (impacto)." },
+            { q: "¿Qué es el 'Riesgo Inherente'?", a: "El nivel de riesgo 'crudo' o natural, antes de aplicar cualquier medida de seguridad." },
+            { q: "¿Qué es el 'Riesgo Residual'?", a: "El riesgo que permanece después de haber aplicado los tratamientos o controles." },
+            { q: "¿Qué es 'Mitigar' el riesgo?", a: "Tomar acciones para reducir la probabilidad de ocurrencia o minimizar el impacto negativo." },
+            { q: "¿Qué es 'Transferir' el riesgo?", a: "Compartir el riesgo con otra parte, por ejemplo, contratando un seguro o tercerizando." },
+            { q: "¿Qué es 'Evitar' el riesgo?", a: "Decidir no iniciar o suspender la actividad que genera el riesgo." },
+            { q: "¿Quién es el 'Dueño del Riesgo'?", a: "La persona con la responsabilidad y autoridad para gestionar un riesgo y rendir cuentas sobre él." },
+            { q: "¿Qué es el 'Compliance'?", a: "El cumplimiento de las obligaciones legales, normativas y éticas de la organización." },
+            { q: "¿Qué es la 'Trazabilidad'?", a: "La capacidad de reconstruir la historia de un evento o decisión a través de registros documentados." }
+        ];
+
+        let currentIndex = 0;
+        const cardElement = document.getElementById('flashcard');
+        const frontText = document.getElementById('frontText');
+        const backText = document.getElementById('backText');
+        const counter = document.getElementById('counter');
+        const progressBar = document.getElementById('progressBar');
+
+        function updateCard() {
+            cardElement.classList.remove('is-flipped');
+            
+            setTimeout(() => {
+                frontText.innerHTML = cards[currentIndex].q;
+                backText.innerHTML = cards[currentIndex].a;
+                counter.innerText = `${currentIndex + 1} / ${cards.length}`;
+                
+                // Actualizar barra de progreso
+                const percentage = ((currentIndex + 1) / cards.length) * 100;
+                progressBar.style.width = `${percentage}%`;
+            }, 200);
+        }
+
+        function flipCard() {
+            cardElement.classList.toggle('is-flipped');
+        }
+
+        function nextCard() {
+            if (currentIndex < cards.length - 1) {
+                currentIndex++;
+                updateCard();
+            } else {
+                // Efecto visual de finalización o reinicio
+                if(confirm("¡Has completado el repaso! ¿Quieres volver al inicio?")) {
+                    currentIndex = 0;
+                    updateCard();
+                }
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        // Navegación con teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') flipCard();
+            if (e.code === 'ArrowRight') nextCard();
+            if (e.code === 'ArrowLeft') prevCard();
+        });
+
+        // Inicializar
+        updateCard();
+
+    </script>
+</body>
+</html>
