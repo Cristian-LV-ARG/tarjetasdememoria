@@ -1,0 +1,337 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards: STD Protección Física de Activos (PAP)</title>
+    <style>
+        :root {
+            --primary: #003366; /* Azul Corporativo */
+            --secondary: #00509e;
+            --accent: #d4af37; /* Dorado */
+            --bg: #eef2f3;
+            --card-front: #ffffff;
+            --card-back: #003366;
+        }
+
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+
+        .container {
+            width: 90%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            border-bottom: 3px solid var(--accent);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+
+        .scene {
+            width: 100%;
+            height: 350px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            box-sizing: border-box;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+
+        .card-front {
+            background-color: var(--card-front);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+
+        .card-front h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+
+        .card-front p {
+            font-size: 1.3rem;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+
+        .card-back {
+            background-color: var(--card-back);
+            color: white;
+            transform: rotateY(180deg);
+            border: 2px solid var(--accent);
+        }
+
+
+        .card-back p {
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+
+        .hint {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: var(--secondary);
+            font-style: italic;
+        }
+
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+            justify-content: center;
+        }
+
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+
+        button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+
+        .counter {
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: var(--text);
+            min-width: 80px;
+            text-align: center;
+        }
+
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: #ddd;
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+
+        .progress-bar {
+            height: 100%;
+            background-color: #008000;
+            width: 5%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="container">
+        <header>
+            <h1>Repaso: STD PAP (Protección Física de Activos)</h1>
+        </header>
+
+
+        <div class="scene" onclick="flipCard()">
+            <div class="card" id="flashcard">
+                <div class="card-face card-front">
+                    <h3>Pregunta / Concepto</h3>
+                    <p id="frontText">Cargando...</p>
+                    <div class="hint">Clic para ver respuesta</div>
+                </div>
+                <div class="card-face card-back">
+                    <p id="backText">Cargando...</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+
+        <div class="controls">
+            <button onclick="prevCard()">&#8592; Anterior</button>
+            <div class="counter" id="counter">1 / 40</div>
+            <button onclick="nextCard()">Siguiente &#8594;</button>
+        </div>
+    </div>
+
+
+    <script>
+        const cards = [
+            { q: "¿Qué implica el 'Enfoque Holístico' en la protección de activos?", a: "Reconocer las interdependencias y relaciones con otras disciplinas, no tratar la seguridad física de forma aislada." },
+            { q: "¿Qué significa el principio de 'Gobernanza' en el estándar PAP?", a: "Proveer dirección, control y una base para la toma de decisiones basada en evidencia fáctica." },
+            { q: "Definición de 'Protección en Profundidad' (Defense in Depth)", a: "El uso de múltiples capas de medidas de seguridad secuenciales para que, si una falla, otra detenga la amenaza." },
+            { q: "¿Cuáles son las 5 funciones principales de un sistema de protección física?", a: "Disuasión, Detección, Retardo, Respuesta (Interrumpir y Neutralizar) (Deter, Deny, Detect, Delay, Response)." },
+            { q: "¿Qué es la 'Disuasión' (Deterrence)?", a: "La práctica de desalentar a un adversario de atacar, haciéndole creer que el ataque será difícil, que la capacidad técnica es necesaria es muy alta o que tiene grandes po." },
+            { q: "¿Qué significa 'Protección Balanceada'?", a: "Asegurar que no existan eslabones débiles; que todas las barreras ofrezcan un nivel de resistencia similar en todo el perímetro. Seguridad vs. Operatividad: Implementar medidas que no obstaculicen las operaciones ni generen molestias excesivas a los usuarios. Costo vs. Beneficio: Equilibrar la inversión en contramedidas con el valor del activo y la reducción del riesgo.Detección, Demora y Respuesta: Las capacidades de detección, demora y respuesta deben estar coordinadas y ser igualmente robustas.        " },
+            { q: "¿Qué es CPTED?", a: "Prevención del Crimen a través del Diseño Ambiental (Crime Prevention Through Environmental Design)." },
+            { q: "¿Cuáles son los 3 principios básicos de CPTED?", a: "Vigilancia Natural, Control de Accesos y Territorialidad." },
+{ q: "¿Cuáles son los 4 enfoques básicos de CPTED?", a: "El enfoque CPTED se centra en: a) Manipular el entorno físico b) Entender el comportamiento humano c) Rediseñar el espacio o usarlo de manera diferente para fomentar los comportamientos preferidos y desincentivar las actividades ilegítimas. d) Aumentar la sensación de propiedad y territorialidad." },
+{ q: "¿Cuál es la definición  CPTED del STD PAP?", a: "Es un enfoque estratégico para reducir el riesgo de actos maliciosos y otros sucesos disruptivos que combina las características naturales de un sitio, el entorno construido y los comportamientos humanos asociados con una ubicación. " },
+            { q: "¿Qué es la 'Vigilancia Natural'?", a: "Diseñar espacios para maximizar la visibilidad, permitiendo que las personas observen sus entornos durante sus actividades normales." },
+            { q: "¿Qué es la 'Territorialidad' en CPTED?", a: "El uso de elementos físicos (vallas, arbustos, cambios de materiales) para expresar propiedad y definir espacios públicos vs. privados." },
+            { q: "En la ecuación del riesgo, ¿qué es la 'Probabilidad'?", a: "La posibilidad de que una amenaza específica explote una vulnerabilidad particular." },
+            { q: "¿Qué es la 'Convergencia' en seguridad?", a: "La integración formal de la seguridad física, lógica (ciberseguridad) y de procesos en una estrategia unificada.Puede incluir además la integración con el plan de continuidad y resiliencia." },
+            { q: "¿Qué significa 'Resiliencia Organizacional'?", a: "La capacidad de una organización para resistir, adaptarse y recuperarse de forma rápida y planificada de interrupciones o crisis." },
+            { q: "¿Cuál es el primer paso antes de diseñar un sistema de protección física?", a: "Realizar una Evaluación de Riesgos (Risk Assessment) para identificar qué se debe proteger." },
+            { q: "¿Qué es el 'Tiempo de Adversario'?", a: "El tiempo que le toma a un intruso cruzar las barreras y alcanzar el activo." },
+            { q: "¿Qué es el 'Tiempo de Respuesta'?", a: "El tiempo que transcurre desde que se detecta una intrusión hasta que la fuerza de respuesta interviene para interrumpir y neutralizar." },
+            { q: "Para que un sistema sea efectivo, ¿cuál debe ser la relación entre Tiempo de Retardo y Tiempo de Respuesta?", a: "El Tiempo de Retardo debe ser MAYOR que el Tiempo de Respuesta." },
+            { q: "¿Qué es un 'Plan de Continuidad de Negocio' (BCP)?", a: "Un plan logístico para recuperar y restaurar funciones críticas interrumpidas después de un desastre a un nivel operativo pautado." },
+            { q: "¿Qué función cumple la 'Iluminación de Seguridad'?", a: "Principalmente disuasión y apoyo a la detección y evaluación (por cámaras o guardias)." },
+            { q: "¿Qué es el 'Control de Acceso'?", a: "El proceso de conceder o denegar el paso a una zona específica basándose en la autorización en base a lo que una persona es, sabe o posee, regulando el paso de personas, vehículos y materiales." },
+            { q: "¿Cuáles son los tres factores de autenticación en control de acceso?", a: "Algo que sabes (PIN), algo que tienes (Tarjeta) y algo que eres (Biometría)." },
+            { q: "¿Qué es una 'Evaluación de Vulnerabilidad'?", a: "El proceso de identificar debilidades físicas, lógicas o procedimentales que podrían ser explotadas por un adversario para consumar un evento de pérdida." },
+            { q: "¿Qué es la 'Debida Diligencia' (Due Diligence)?", a: "El cuidado que una persona razonable ejercería bajo las mismas circunstancias para evitar daños." },
+            { q: "¿Qué es un sistema de CCTV/VSS?", a: "Sistemas de Videovigilancia utilizados para detectar, reconocer, evaluar, identificar, documentar, auditar o monitorear actividades." },
+            { q: "¿Qué significa 'Falla de componente único' (Single Point of Failure)?", a: "Un elemento crítico cuyo fallo provoca el colapso de todo el sistema de seguridad. Se debe evitar mediante redundancia y mantenimiento preventivo y pruebas regulares de funcionamiento." },
+            { q: "¿Qué es la 'Seguridad Lógica'?", a: "La protección de activos de información y sistemas informáticos (software, datos, redes)." },
+            { q: "¿Qué es el 'Mantenimiento Preventivo' en sistemas de seguridad?", a: "Revisiones programadas para mantener los equipos funcionando antes de que fallen." },
+            { q: "¿Qué es el principio de 'Mínimo Privilegio'?", a: "Otorgar a los usuarios solo el acceso y los permisos estrictamente necesarios para realizar su trabajo." },
+            { q: "¿Qué es la 'Defensa del Perímetro'?", a: "La primera línea de defensa física (rejas, muros) que demarca la propiedad y retarda la entrada." },
+            { q: "¿Qué es un 'Análisis de Impacto en el Negocio' (BIA)?", a: "Un estudio para determinar la criticidad de los procesos de negocio y el impacto de su interrupción." },
+            { q: "¿Qué significa 'Redundancia' en sistemas de seguridad?", a: "Tener sistemas de respaldo (ej. doble vía de comunicación) para asegurar la continuidad si el principal falla." },
+            { q: "¿Qué es la 'Detección de Intrusos'?", a: "El uso de sensores para alertar sobre la presencia no autorizada en un área protegida." },
+            { q: "¿Qué es la 'Evaluación de Desempeño' del sistema?", a: "Pruebas y simulacros regulares para verificar si el sistema de seguridad cumple sus objetivos." },
+            { q: "¿Qué es la 'Gestión de Crisis'?", a: "El proceso estratégico para liderar una organización a través de una emergencia mayor." },
+            { q: "¿Qué es un 'Anillo de Protección'?", a: "Zonas concéntricas de seguridad, donde la protección aumenta a medida que se acerca al activo crítico." },
+            { q: "¿Qué rol juega la 'Capacitación' en el PAP?", a: "Es esencial; la tecnología sin personal competente y consciente de los procedimientos es inútil." },
+            { q: "¿Qué es el 'Apetito de Riesgo'?", a: "La cantidad y tipo de riesgo que una organización está dispuesta a buscar o retener." },
+            { q: "¿Qué es la 'Seguridad Procedimental'?", a: "Las normas y procesos escritos (SOPs) que dictan cómo deben actuar las personas ante eventos de seguridad." },
+            { q: "¿Qué es el Ciclo de  Mejora Continua (PDCA)?", a: "El ciclo Planificar-Hacer-Verificar-Actuar para optimizar constantemente el programa de seguridad." },
+            { q: "Según el PAP, ¿la seguridad debe ser un obstáculo o un habilitador?", a: "Un habilitador del negocio, alineado con la misión y visión de la organización. Debemos ser un socio estratégico que permita el cumplimiento de los objetivos" }
+        ];
+
+
+        let currentIndex = 0;
+        const cardElement = document.getElementById('flashcard');
+        const frontText = document.getElementById('frontText');
+        const backText = document.getElementById('backText');
+        const counter = document.getElementById('counter');
+        const progressBar = document.getElementById('progressBar');
+
+
+        function updateCard() {
+            cardElement.classList.remove('is-flipped');
+            setTimeout(() => {
+                frontText.innerHTML = cards[currentIndex].q;
+                backText.innerHTML = cards[currentIndex].a;
+                counter.innerText = `${currentIndex + 1} / ${cards.length}`;
+                const pct = ((currentIndex + 1) / cards.length) * 100;
+                progressBar.style.width = `${pct}%`;
+            }, 200);
+        }
+
+
+        function flipCard() {
+            cardElement.classList.toggle('is-flipped');
+        }
+
+
+        function nextCard() {
+            if (currentIndex < cards.length - 1) {
+                currentIndex++;
+                updateCard();
+            } else {
+                if(confirm("¡Fin del repaso! ¿Volver al inicio?")) {
+                    currentIndex = 0;
+                    updateCard();
+                }
+            }
+        }
+
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') flipCard();
+            if (e.code === 'ArrowRight') nextCard();
+            if (e.code === 'ArrowLeft') prevCard();
+        });
+
+
+        updateCard();
+    </script>
+</body>
+</html>

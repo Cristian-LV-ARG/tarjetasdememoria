@@ -1,0 +1,654 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen de Autodiagnóstico: Estándar PAP</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f7; color: #2c3e50; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; color: #003366; border-bottom: 3px solid #d4af37; padding-bottom: 10px; }
+        .intro { text-align: center; margin-bottom: 30px; font-style: italic; color: #555; }
+        
+        .quiz-container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        /* Estilos de la Barra de Progreso (Personalizados) */
+        .progress { 
+            height: 8px; /* 20% más gruesa que el estándar de 6px */
+            background: #eee; 
+            margin-bottom: 20px; 
+            border-radius: 5px; 
+            overflow: hidden;
+        }
+        .progress-bar { 
+            height: 100%; 
+            background: #008000; /* Color Verde solicitado */
+            width: 0%; 
+            transition: width 0.3s; 
+            border-radius: 5px; 
+        }
+
+
+        .question-card { display: none; }
+        .question-card.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .question-text { font-size: 1.2em; font-weight: bold; margin-bottom: 20px; }
+        
+        .options { display: flex; flex-direction: column; gap: 10px; }
+        
+        .option-btn { 
+            padding: 15px; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 8px; 
+            background: white; 
+            cursor: pointer; 
+            text-align: left; 
+            font-size: 1em; 
+            transition: all 0.2s; 
+        }
+        
+        .option-btn:hover { background-color: #f0f8ff; border-color: #003366; }
+        
+        .option-btn.correct { background-color: #d4edda; border-color: #28a745; color: #155724; }
+        .option-btn.incorrect { background-color: #f8d7da; border-color: #dc3545; color: #721c24; }
+        
+        .feedback { margin-top: 20px; padding: 15px; border-radius: 5px; display: none; }
+        .feedback.show { display: block; }
+        
+        .nav-btns { margin-top: 20px; display: flex; justify-content: space-between; }
+        
+        button.nav { padding: 10px 25px; background-color: #003366; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button.nav:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        .score-board { text-align: center; font-size: 1.5em; margin-top: 20px; display: none; }
+    </style>
+</head>
+<body>
+
+
+    <h1>Examen de Autodiagnóstico PAP</h1>
+    <p class="intro">Evaluación basada en el Estándar de Protección Física de Activos (ASIS PAP)</p>
+
+
+    <div class="quiz-container">
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+
+        <div id="quiz">
+            </div>
+
+
+        <div class="feedback" id="feedback"></div>
+
+
+        <div class="nav-btns">
+            <button class="nav" id="nextBtn" onclick="nextQuestion()" disabled>Siguiente</button>
+        </div>
+
+
+        <div class="score-board" id="scoreBoard">
+            <h2>Resultados Finales</h2>
+            <p>Tu puntuación: <span id="finalScore">0</span> / 40</p>
+            <p id="finalMessage"></p>
+            <button class="nav" onclick="location.reload()">Reiniciar Examen</button>
+        </div>
+    </div>
+
+
+    <script>
+        // Base de datos de preguntas extraída del PDF
+        const questions = [
+            {
+                q: "Un enfoque holístico como principio de protección de activos significa que:",
+                options: [
+                    "Debe definirse un plan de comunicación respaldado por la alta gerencia",
+                    "Deben reconocerse las interdependencias y relaciones con otras disciplinas",
+                    "Deben hacerse estimaciones y supuestos al analizar probabilidades",
+                    "Debe considerarse la protección en profundidad y falla de componente único"
+                ],
+                answer: 1, // b
+                feedback: "Correcto. El enfoque holístico implica ver la seguridad como un todo interconectado."
+            },
+            {
+                q: "Gobernanza, como principio para la protección de activos tangibles e intangibles significa que:",
+                options: [
+                    "Debe proveerse dirección y criterio para el apetito de riesgo",
+                    "El programa debe sentar las bases para la toma de decisiones basada en evidencia fáctica",
+                    "Debe considerarse el contexto político de la organización",
+                    "La estrategia debe estar alineada con los procesos de la misión"
+                ],
+                answer: 1, // b
+                feedback: "Correcto. La gobernanza efectiva se basa en decisiones fundamentadas en hechos y evidencia."
+            },
+            {
+                q: "Enfoque sistémico, como principio de protección de activos tangibles e intangibles significa que:",
+                options: [
+                    "Deben examinarse los vínculos existentes entre todos los elementos del programa",
+                    "El programa debe basarse en evidencia fáctica",
+                    "La estructura del programa debe mantenerse predecible y resiliente",
+                    "Fomenta que las organizaciones analicen los requisitos organizacionales"
+                ],
+                answer: 0, // a
+                feedback: "Correcto. El enfoque sistémico analiza cómo interactúan las partes del programa."
+            },
+            {
+                q: "¿Cuál de los siguientes NO es un principio general de un Estándar de Sistemas de Gestión de Protección Física de Activos?",
+                options: [
+                    "Responsabilidad de Gobernanza",
+                    "Enfoque sistémico",
+                    "Protección en Profundidad",
+                    "Manejo de Incertidumbre"
+                ],
+                answer: 2, // f (Protección en profundidad es un concepto técnico, no un principio de gestión general en esta lista específica del examen)
+                feedback: "Correcto. En este contexto, Protección en Profundidad es una estrategia técnica, mientras que los otros son principios de gestión."
+            },
+            {
+                q: "¿Quién es responsable de establecer la estrategia a seguir por un Programa de Protección Física de Activos (PPFA)?",
+                options: [
+                    "Los Stakeholders del área de seguridad",
+                    "El responsable de llevar adelante el PPFA",
+                    "La Alta Gerencia, junto con el responsable del Departamento de Seguridad",
+                    "La Junta de Directores exclusivamente"
+                ],
+                answer: 2, // c
+                feedback: "Correcto. Requiere la alineación entre la dirección estratégica y el experto en seguridad."
+            },
+            {
+                q: "¿De qué manera se demuestra compromiso con el PPFA?",
+                options: [
+                    "Asignando un responsable competente (CPP ó PSP)",
+                    "Estableciendo un evento anual de reconocimiento",
+                    "Dirigiendo las estrategias de protección en virtud de las solicitudes del top management",
+                    "Promulgando la Dirección la política de Protección Física"
+                ],
+                answer: 2, // c
+                feedback: "Correcto. El compromiso se demuestra alineando la protección con la dirección ejecutiva."
+            },
+            {
+                q: "Como acrónimo de su característica o propiedad inherente, los objetivos del sistema de gestión deben ser:",
+                options: [
+                    "PASO",
+                    "PHVA",
+                    "BESO",
+                    "INTELIGENTE (SMART)"
+                ],
+                answer: 3, // d
+                feedback: "Correcto. Specific, Measurable, Achievable, Relevant, Time-bound."
+            },
+            {
+                q: "¿Qué análisis realizo para definir la criticidad de un activo?",
+                options: [
+                    "BIA (Business Impact Analysis)",
+                    "SVA",
+                    "CARVER",
+                    "CRAVED"
+                ],
+                answer: 0, // a
+                feedback: "Correcto. El BIA determina qué tan crítico es un activo o proceso para el negocio."
+            },
+            {
+                q: "¿En qué etapa del proceso de gestión PDCA se deben identificar los objetivos?",
+                options: [
+                    "Planificar",
+                    "Hacer",
+                    "Verificar",
+                    "Actuar"
+                ],
+                answer: 0, // a
+                feedback: "Correcto. Los objetivos se definen en la fase de Planificación."
+            },
+            {
+                q: "¿Qué significa la letra R en el acrónimo CRAVED?",
+                options: [
+                    "Recuperación",
+                    "Recompensa",
+                    "Removible",
+                    "Remoto"
+                ],
+                answer: 2, // c
+                feedback: "Correcto. CRAVED: Concealable, Removable, Available, Valuable, Enjoyable, Disposable."
+            },
+            {
+                q: "Según la clasificación del PAP 2021, aquellos riesgos que requieren ser evitados o mitigados son clasificados como:",
+                options: [
+                    "Catastróficos",
+                    "Tolerables",
+                    "Moderados",
+                    "Desconocidos"
+                ],
+                answer: 0, // a
+                feedback: "Correcto. Los riesgos catastróficos son inaceptables y requieren acción inmediata."
+            },
+            {
+                q: "En la etapa de planeamiento, ¿cómo identifico el nivel óptimo de reducción de riesgo al mejor valor?",
+                options: [
+                    "Mediante consultores especializados",
+                    "Realizando un Análisis Costo-Beneficio de riesgos vs contramedidas",
+                    "Con revisiones del rendimiento del SPF",
+                    "Considerando las características del sistema"
+                ],
+                answer: 1, // b
+                feedback: "Correcto. El Costo-Beneficio determina la eficiencia de la inversión."
+            },
+            {
+                q: "El grado de protección física deseable para las organizaciones se basa en un análisis de dos factores:",
+                options: [
+                    "Costo y criticidad",
+                    "Costo y condiciones ambientales",
+                    "Criticidad y vulnerabilidad",
+                    "Costo y vulnerabilidad"
+                ],
+                answer: 0, // a
+                feedback: "Correcto. Se busca equilibrar cuánto cuesta proteger con cuán crítico es el activo."
+            },
+            {
+                q: "¿Dentro de qué capa debo ubicar el activo con mayor criticidad para mi organización?",
+                options: [
+                    "Exterior",
+                    "Medio",
+                    "Interior",
+                    "Separada"
+                ],
+                answer: 2, // c
+                feedback: "Correcto. Los activos más valiosos van en el núcleo (capa interior) de la protección en profundidad."
+            },
+            {
+                q: "¿Cuál de las siguientes consideraciones de riesgo debe ser tratada a mínimo costo?",
+                options: [
+                    "Tratarlo cuando es intolerable",
+                    "Hacer tan bajo el riesgo como sea razonable",
+                    "Tratarlo aunque sea tolerable",
+                    "Si es aceptable, no tratarlo"
+                ],
+                answer: 2, // c
+                feedback: "Correcto. Si el riesgo es tolerable, se trata solo si el costo es mínimo."
+            },
+            {
+                q: "La convergencia de la seguridad física se logra junto a:",
+                options: [
+                    "Seguridad y mantenimiento",
+                    "Protección ejecutiva",
+                    "Continuidad del Negocio y TI",
+                    "Ninguna de las anteriores"
+                ],
+                answer: 2, // c
+                feedback: "Correcto. Convergencia implica unir Seguridad Física, Lógica (TI) y Continuidad."
+            },
+            {
+                q: "Las políticas y procedimientos de seguridad física deben ser aprobadas por:",
+                options: [
+                    "La alta dirección",
+                    "El público usuario",
+                    "El responsable de llevarlas adelante",
+                    "La máxima autoridad de seguridad"
+                ],
+                answer: 0, // a
+                feedback: "Correcto. La aprobación de la Alta Dirección les da autoridad y legitimidad."
+            },
+            {
+                q: "Detección sin _______ no es detección.",
+                options: [
+                    "Evasión",
+                    "Registro",
+                    "Validación (Evaluación)",
+                    "Visualización"
+                ],
+                answer: 2, // c
+                feedback: "Correcto. Una alarma sin verificar si es real o falsa no sirve."
+            },
+            {
+                q: "El entrenamiento en la utilización del SPF, ¿en qué parte de su ciclo de vida se ubica?",
+                options: [
+                    "Planeamiento",
+                    "Implementación",
+                    "Mantenimiento",
+                    "Gestión de Cambios"
+                ],
+                answer: 1, // b
+                feedback: "Correcto. Se entrena al personal cuando se implementa el sistema."
+            },
+            {
+                q: "¿Cuál es una de las principales funciones de un Sistema de Protección Física?",
+                options: [
+                    "Detectar, demorar y responder",
+                    "Optimizar costos operativos",
+                    "Eliminar completamente las amenazas",
+                    "Aumentar la productividad"
+                ],
+                answer: 3, // D (Según el PDF la respuesta marcada es D, aunque teóricamente A es la definición técnica clásica. Respetamos la fuente: el sistema bien diseñado permite que el negocio opere sin trabas).
+                feedback: "Correcto (Según fuente). Un sistema eficaz permite que el personal trabaje seguro y productivo."
+            },
+            {
+                q: "¿Qué significa 'protección en profundidad' en el diseño de un SPF?",
+                options: [
+                    "Usar sensores de alta tecnología",
+                    "Garantizar redundancia",
+                    "Evitar fallas",
+                    "Implementar múltiples capas de protección"
+                ],
+                answer: 3, // D
+                feedback: "Correcto. Capas secuenciales que el adversario debe superar."
+            },
+            {
+                q: "¿Qué característica permite que el sistema funcione ante fallas?",
+                options: [
+                    "Protección equilibrada",
+                    "Protección en profundidad",
+                    "Mínima consecuencia ante falla",
+                    "Automatización total"
+                ],
+                answer: 0, // A (Según fuente PDF, aunque técnicamente la Redundancia es clave para fallas, la protección equilibrada asegura consistencia).
+                feedback: "Correcto. Evita puntos débiles que anulen el resto de la inversión."
+            },
+            {
+                q: "¿Qué busca la 'protección equilibrada'?",
+                options: [
+                    "Que todos los elementos tengan el mismo costo",
+                    "Paredes más resistentes que puertas",
+                    "Sistema invulnerable",
+                    "Tiempo de demora y probabilidad de detección constantes"
+                ],
+                answer: 3, // D
+                feedback: "Correcto. Que no haya un camino más fácil que otro para el intruso."
+            },
+            {
+                q: "¿Cuál es el enfoque de diseño recomendado para SPF?",
+                options: [
+                    "Enfoque basado en criterios",
+                    "Enfoque basado en desempeño",
+                    "Listas de comprobación",
+                    "Diseño estructural"
+                ],
+                answer: 1, // B
+                feedback: "Correcto. Se diseña según cómo debe comportarse el sistema ante una amenaza (Performance-based)."
+            },
+            {
+                q: "¿Cuál es el propósito de la redundancia en un SPF?",
+                options: [
+                    "Reducir costos",
+                    "Asegurar que el sistema continúe funcionando ante fallas críticas",
+                    "Incrementar velocidad de detección",
+                    "Eliminar mantenimiento"
+                ],
+                answer: 1, // B
+                feedback: "Correcto. Evita el punto único de falla."
+            },
+            {
+                q: "¿Qué técnica se utiliza para evaluar la probabilidad de detección de una amenaza en cada capa?",
+                options: [
+                    "Análisis de vulnerabilidades",
+                    "Simulación de ataques",
+                    "Evaluación de desempeño basada en métricas",
+                    "Inspección visual"
+                ],
+                answer: 2, // C
+                feedback: "Correcto. Medir con datos reales el rendimiento de los sensores."
+            },
+            {
+                q: "¿Qué factor es crítico para determinar el tiempo de demora en un SPF?",
+                options: [
+                    "La resistencia física de las barreras",
+                    "La cantidad de sensores",
+                    "La velocidad de respuesta",
+                    "La ubicación geográfica"
+                ],
+                answer: 0, // A
+                feedback: "Correcto. Las barreras físicas (muros, puertas) compran tiempo."
+            },
+            {
+                q: "¿Qué método se utiliza para medir la efectividad global de un SPF?",
+                options: [
+                    "Inspección visual",
+                    "Análisis costo-beneficio",
+                    "Pruebas de desempeño integradas",
+                    "Comparación con estándares"
+                ],
+                answer: 2, // C
+                feedback: "Correcto. Probar todo el sistema junto (detectar + evaluar + responder)."
+            },
+            {
+                q: "¿Cómo se define el concepto de 'riesgo residual' en un SPF?",
+                options: [
+                    "El riesgo que permanece después de implementar medidas de protección",
+                    "El riesgo asociado al costo",
+                    "El riesgo de falla",
+                    "El riesgo de detección tardía"
+                ],
+                answer: 0, // A
+                feedback: "Correcto. Es el riesgo remanente que la organización acepta."
+            },
+            {
+                q: "¿Qué componentes forman la base para diseñar un SPF efectivo?",
+                options: [
+                    "Presupuesto, personal y cronograma",
+                    "Tecnología, arquitectura y normativa",
+                    "Personas, procedimientos y tecnología",
+                    "Amenazas, activos y vulnerabilidades"
+                ],
+                answer: 2, // C
+                feedback: "Correcto. La tríada clásica de la seguridad (PPT)."
+            },
+            {
+                q: "¿Cuál es el marco de referencia que debe guiar las metas y objetivos de un SPF?",
+                options: [
+                    "Integración funcional",
+                    "Estrategia de negocio de la organización",
+                    "FODA y PESTEL",
+                    "Normativas ISO 31000"
+                ],
+                answer: 1, // B
+                feedback: "Correcto. La seguridad debe alinearse con el negocio."
+            },
+            {
+                q: "En el contexto de integración funcional, ¿cuáles son las funciones esenciales de un SPF?",
+                options: [
+                    "Supervisión, evaluación y documentación",
+                    "Protección, monitoreo y análisis",
+                    "Identificación, verificación y reacción",
+                    "Detección, demora y detención (Respuesta)"
+                ],
+                answer: 3, // D
+                feedback: "Correcto. Detect, Delay, Respond (DDR)."
+            },
+            {
+                q: "¿Qué pasos contempla el enfoque de sistemas según ASIS?",
+                options: [
+                    "Análisis de activos y respuesta",
+                    "Diseño técnico y auditoría",
+                    "Diagnóstico y ejecución",
+                    "Determinación de vulnerabilidades, aplicación de contramedidas y evaluación"
+                ],
+                answer: 3, // D
+                feedback: "Correcto. Es un ciclo completo de análisis, implementación y prueba."
+            },
+            {
+                q: "Un proveedor crítico rechaza compartir su matriz de riesgos. Según el PAP, ¿cuál es la acción adecuada?",
+                options: [
+                    "Exigir auditorías obligatorias",
+                    "Sustituir al proveedor",
+                    "Establecer requisitos mínimos de protección y validar evidencias objetivas",
+                    "Aceptar la situación"
+                ],
+                answer: 2, // c
+                feedback: "Correcto. Si no comparten datos sensibles, debemos validar que cumplan nuestros mínimos."
+            },
+            {
+                q: "Un activo tiene baja probabilidad de ataque, pero consecuencias catastróficas. ¿Qué enfoque corresponde?",
+                options: [
+                    "Aceptación del riesgo",
+                    "Transferencia del riesgo",
+                    "Tratamiento prioritario por criticidad",
+                    "Monitoreo sin intervención"
+                ],
+                answer: 2, // c
+                feedback: "Correcto. El alto impacto (catastrófico) obliga a tratarlo, aunque sea poco probable."
+            },
+            {
+                q: "Un sistema de detección perimetral muestra cero alarmas durante seis meses. ¿Interpretación adecuada?",
+                options: [
+                    "El sistema funciona perfectamente",
+                    "La amenaza ha desaparecido",
+                    "El sistema requiere pruebas, calibración y verificación funcional",
+                    "El perímetro es seguro"
+                ],
+                answer: 2, // c
+                feedback: "Correcto. Cero alarmas suele indicar falla de detección, no ausencia de eventos (ni siquiera falsas alarmas)."
+            },
+            {
+                q: "Incidente ciber-físico por proveedor externo. ¿Evaluación alineada con PAP?",
+                options: [
+                    "Falla en la integración entre seguridad física y ciberseguridad (Convergencia)",
+                    "El incidente fue externo, no aplica PAP",
+                    "Responsabilidad exclusiva del proveedor",
+                    "Solo requiere controles biométricos"
+                ],
+                answer: 0, // a
+                feedback: "Correcto. La falta de convergencia dejó una vulnerabilidad crítica."
+            },
+            {
+                q: "Robos internos nocturnos en puntos ciegos. Instalar más cámaras interfiere con robots. ¿Acción coherente?",
+                options: [
+                    "Cámaras térmicas",
+                    "Sistema de IA",
+                    "Aumentar iluminación",
+                    "Rediseñar flujos operativos y segregación de funciones"
+                ],
+                answer: 3, // d
+                feedback: "Correcto. Si la tecnología falla o interfiere, se recurre a la seguridad procedimental."
+            },
+            {
+                q: "Falla de redundancia: Dos centros de control dependen de la misma subestación eléctrica. Interpretación:",
+                options: [
+                    "Evento excepcional no previsible",
+                    "Instalar generadores",
+                    "La falla demuestra que la redundancia no era real (dependencia común)",
+                    "La auditoría es correcta"
+                ],
+                answer: 2, // c
+                feedback: "Correcto. No hay redundancia verdadera si comparten un punto único de falla (la subestación)."
+            },
+            {
+                q: "¿Qué estándar se requiere para la certificación APP, CPP, PSP y PCI en 2025?",
+                options: [
+                    "Solo ISO 31000",
+                    "Estándar PAP, ESRM, SRA, entre otros",
+                    "Normas IRAM",
+                    "Solo guías de estudio"
+                ],
+                answer: 1, // b
+                feedback: "Correcto. Las certificaciones de ASIS requieren el dominio de sus estándares principales."
+            }
+        ];
+
+
+        let currentQuestion = 0;
+        let score = 0;
+
+
+        function loadQuestion() {
+            const quizDiv = document.getElementById('quiz');
+            const q = questions[currentQuestion];
+            const feedbackDiv = document.getElementById('feedback');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            feedbackDiv.style.display = 'none';
+            feedbackDiv.className = 'feedback';
+            nextBtn.disabled = true;
+
+
+            // Actualizar Barra de Progreso
+            const progress = ((currentQuestion) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+
+
+            let html = `<div class="question-card active">
+                <div class="question-text">${currentQuestion + 1}. ${q.q}</div>
+                <div class="options">`;
+            
+            q.options.forEach((opt, index) => {
+                html += `<button class="option-btn" onclick="checkAnswer(${index}, this)">${opt}</button>`;
+            });
+
+
+            html += `</div></div>`;
+            quizDiv.innerHTML = html;
+        }
+
+
+        function checkAnswer(selectedIndex, btnElement) {
+            const q = questions[currentQuestion];
+            const feedbackDiv = document.getElementById('feedback');
+            const btns = document.querySelectorAll('.option-btn');
+            const nextBtn = document.getElementById('nextBtn');
+
+
+            // Deshabilitar botones para evitar múltiples clics
+            btns.forEach(btn => btn.disabled = true);
+
+
+            if (selectedIndex === q.answer) {
+                btnElement.classList.add('correct');
+                feedbackDiv.innerHTML = `<strong>¡Correcto!</strong> ${q.feedback}`;
+                feedbackDiv.classList.add('show');
+                feedbackDiv.style.backgroundColor = "#d4edda";
+                feedbackDiv.style.color = "#155724";
+                score++;
+            } else {
+                btnElement.classList.add('incorrect');
+                // Mostrar la correcta
+                if(btns[q.answer]) btns[q.answer].classList.add('correct'); 
+                
+                feedbackDiv.innerHTML = `<strong>Incorrecto.</strong> ${q.feedback}`;
+                feedbackDiv.classList.add('show');
+                feedbackDiv.style.backgroundColor = "#f8d7da";
+                feedbackDiv.style.color = "#721c24";
+            }
+
+
+            nextBtn.disabled = false;
+        }
+
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+
+        function showResults() {
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('feedback').style.display = 'none';
+            document.querySelector('.nav-btns').style.display = 'none';
+            document.getElementById('progressBar').style.width = '100%';
+            
+            const scoreBoard = document.getElementById('scoreBoard');
+            scoreBoard.style.display = 'block';
+            document.getElementById('finalScore').innerText = score;
+
+
+            const msg = document.getElementById('finalMessage');
+            // Lógica de calificación (40 preguntas)
+            if (score >= 36) {
+                msg.innerText = "¡Excelente! Nivel de Experto (90%+)";
+                msg.style.color = "green";
+            } else if (score >= 28) {
+                msg.innerText = "Buen trabajo. Aprobado (70%+)";
+                msg.style.color = "orange";
+            } else {
+                msg.innerText = "Necesitas repasar el Estándar PAP.";
+                msg.style.color = "red";
+            }
+        }
+
+
+        // Iniciar
+        loadQuestion();
+    </script>
+</body>
+</html>
