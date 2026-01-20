@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjetas de Memoria - Dominio 1</title>
+    <style>
+        :root {
+            --primary-color: #008000; /* Color verde solicitado */
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 { color: #2c3e50; }
+        
+        /* Contenedor Principal */
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* Barra de Progreso */
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 12px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Escena de la Tarjeta (para efecto 3D) */
+        .card-scene {
+            width: 100%;
+            height: 350px;
+            perspective: 1000px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        /* Tarjeta en sí */
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-radius: 15px;
+        }
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* Caras de la tarjeta */
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            box-sizing: border-box;
+            text-align: center;
+            border-radius: 15px;
+            background: white;
+            border: 2px solid var(--primary-color);
+        }
+        .card-face.front {
+            background-color: #ffffff;
+        }
+        .card-face.back {
+            transform: rotateY(180deg);
+            background-color: #f0fdf4; /* Verde muy claro */
+        }
+
+        .concept-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        .concept-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+        .hint {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* Botones */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-reset { background-color: #555; }
+    </style>
+</head>
+<body>
+
+    <h1>Tarjetas de Memoria: Clase 02 Dominio 1 Tarea 1</h1>
+    
+    <div class="container">
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div style="text-align: center; margin-bottom: 10px;">
+            Tarjeta <span id="current-index">1</span> de <span id="total-count">25</span>
+        </div>
+
+        <div class="card-scene" onclick="flipCard()">
+            <div class="card" id="flashcard">
+                <div class="card-face front">
+                    <div class="concept-title">Concepto</div>
+                    <div class="concept-text" id="front-text">Cargando...</div>
+                    <div class="hint">(Haz clic para ver la definición)</div>
+                </div>
+                <div class="card-face back">
+                    <div class="concept-title">Definición</div>
+                    <div class="concept-text" id="back-text">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="prev-btn" onclick="changeCard(-1)">Anterior</button>
+            <button class="btn btn-reset" onclick="resetCards()">Reiniciar</button>
+            <button class="btn" id="next-btn" onclick="changeCard(1)">Siguiente</button>
+        </div>
+    </div>
+
+<script>
+    // Datos extraídos de tus documentos
+    const cardsData = [
+        { front: "Programa de Seguridad", back: "Estrategia de protección alineada con la misión y visión del negocio para mitigar riesgos y apoyar objetivos." },
+        { front: "Debida Diligencia (Due Diligence)", back: "El 'cuidado razonable' para evitar negligencia. Ejemplo: Revisar antecedentes antes de contratar." },
+        { front: "Responsabilidad (Liability)", back: "Obligación legal de responder por daños. Si falla la seguridad por negligencia, la empresa es responsable." },
+        { front: "Gap Analysis (Análisis de Brechas)", back: "Comparación entre el estado actual ('dónde estamos') y el ideal ('dónde deberíamos estar')." },
+        { front: "Políticas", back: "Reglas de alto nivel dictadas por la gerencia que dicen QUÉ se debe hacer." },
+        { front: "Procedimientos", back: "Instrucciones paso a paso sobre CÓMO cumplir con las políticas." },
+        { front: "Convergencia", back: "Unión de la seguridad física y la ciberseguridad (IT) para trabajar coordinadamente." },
+        { front: "Seguridad en Profundidad", back: "Estrategia de múltiples capas (anillos concéntricos) para que el adversario deba vencerlas secuencialmente." },
+        { front: "Redundancia", back: "Evita 'puntos únicos de fallo'. Si una capa falla, las siguientes siguen protegiendo." },
+        { front: "CPTED", back: "Prevención del Crimen a través del Diseño Ambiental (iluminación, paisajismo, control de accesos naturales)." },
+        { front: "Función de Demora", back: "Elemento físico que retrasa al intruso para dar tiempo a la detección y respuesta." },
+        { front: "Visión", back: "Declaración aspiracional a largo plazo ('sueño' futuro del departamento)." },
+        { front: "Misión", back: "Declaración del propósito actual: qué hacemos, para quién y cómo." },
+        { front: "Métricas", back: "Medidas cuantificables de desempeño (ej. número de incidentes)." },
+        { front: "KPI", back: "Indicadores Clave de Desempeño ligados a objetivos críticos de éxito." },
+        { front: "Datos Cuantitativos", back: "Datos numéricos y objetivos (costos, tiempos, cantidades)." },
+        { front: "Datos Cualitativos", back: "Datos subjetivos basados en percepción (encuestas de satisfacción, sensación de seguridad)." },
+        { front: "ROI (Retorno de Inversión)", back: "Cálculo financiero para justificar el presupuesto y valor del programa." },
+        { front: "FODA (SWOT)", back: "Análisis de Fortalezas, Oportunidades, Debilidades y Amenazas." },
+        { front: "PESTEL", back: "Análisis del entorno: Político, Económico, Social, Tecnológico, Legal y Ambiental." },
+        { front: "Red Teaming", back: "Simulacros donde se actúa como el adversario para probar las defensas." },
+        { front: "Checklist", back: "Herramienta de auditoría para garantizar consistencia y objetividad." },
+        { front: "Activo", back: "Cualquier bien tangible o intangible con valor para la organización." },
+        { front: "Riesgo", back: "Probabilidad de que una amenaza explote una vulnerabilidad causando impacto." },
+        { front: "Protección Equilibrada", back: "Principio donde el tiempo de retardo es consistente en todas las rutas de ataque posibles." }
+    ];
+
+    let currentIndex = 0;
+    const totalCards = cardsData.length;
+    
+    const cardElement = document.getElementById('flashcard');
+    const frontText = document.getElementById('front-text');
+    const backText = document.getElementById('back-text');
+    const progressBar = document.getElementById('progress-bar');
+    const currentIndexDisplay = document.getElementById('current-index');
+    const totalCountDisplay = document.getElementById('total-count');
+
+    function loadCard(index) {
+        // Reset giro
+        cardElement.classList.remove('is-flipped');
+        
+        // Pequeña espera para cambiar texto sin que se vea el cambio brusco si estaba girada
+        setTimeout(() => {
+            frontText.textContent = cardsData[index].front;
+            backText.textContent = cardsData[index].back;
+            currentIndexDisplay.textContent = index + 1;
+            updateProgress();
+        }, 150);
+    }
+
+    function flipCard() {
+        cardElement.classList.toggle('is-flipped');
+    }
+
+    function changeCard(direction) {
+        const newIndex = currentIndex + direction;
+        if (newIndex >= 0 && newIndex < totalCards) {
+            currentIndex = newIndex;
+            loadCard(currentIndex);
+        }
+    }
+
+    function resetCards() {
+        currentIndex = 0;
+        loadCard(0);
+    }
+
+    function updateProgress() {
+        const pct = ((currentIndex + 1) / totalCards) * 100;
+        progressBar.style.width = pct + "%";
+        
+        // Estado de botones
+        document.getElementById('prev-btn').disabled = (currentIndex === 0);
+        document.getElementById('next-btn').disabled = (currentIndex === totalCards - 1);
+    }
+
+    // Iniciar
+    totalCountDisplay.textContent = totalCards;
+    loadCard(0);
+
+</script>
+</body>
+</html>
