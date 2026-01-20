@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -26,7 +26,6 @@
             transition: width 0.3s; 
             border-radius: 5px; 
         }
-
 
         .question-card { display: none; }
         .question-card.active { display: block; animation: fadeIn 0.5s; }
@@ -65,28 +64,22 @@
 </head>
 <body>
 
-
     <h1>Examen de Autodiagnóstico PAP</h1>
     <p class="intro">Evaluación basada en el Estándar de Protección Física de Activos (ASIS PAP)</p>
-
 
     <div class="quiz-container">
         <div class="progress">
             <div class="progress-bar" id="progressBar"></div>
         </div>
 
-
         <div id="quiz">
             </div>
 
-
         <div class="feedback" id="feedback"></div>
-
 
         <div class="nav-btns">
             <button class="nav" id="nextBtn" onclick="nextQuestion()" disabled>Siguiente</button>
         </div>
-
 
         <div class="score-board" id="scoreBoard">
             <h2>Resultados Finales</h2>
@@ -96,9 +89,7 @@
         </div>
     </div>
 
-
     <script>
-        // Base de datos de preguntas extraída del PDF
         const questions = [
             {
                 q: "Un enfoque holístico como principio de protección de activos significa que:",
@@ -141,7 +132,7 @@
                     "Protección en Profundidad",
                     "Manejo de Incertidumbre"
                 ],
-                answer: 2, // f (Protección en profundidad es un concepto técnico, no un principio de gestión general en esta lista específica del examen)
+                answer: 2, // f
                 feedback: "Correcto. En este contexto, Protección en Profundidad es una estrategia técnica, mientras que los otros son principios de gestión."
             },
             {
@@ -317,8 +308,8 @@
                     "Eliminar completamente las amenazas",
                     "Aumentar la productividad"
                 ],
-                answer: 3, // D (Según el PDF la respuesta marcada es D, aunque teóricamente A es la definición técnica clásica. Respetamos la fuente: el sistema bien diseñado permite que el negocio opere sin trabas).
-                feedback: "Correcto (Según fuente). Un sistema eficaz permite que el personal trabaje seguro y productivo."
+                answer: 3, // D
+                feedback: "Correcto. Un SPF eficaz permite que el personal trabaje seguro y productivo, habilitando el negocio."
             },
             {
                 q: "¿Qué significa 'protección en profundidad' en el diseño de un SPF?",
@@ -339,7 +330,7 @@
                     "Mínima consecuencia ante falla",
                     "Automatización total"
                 ],
-                answer: 0, // A (Según fuente PDF, aunque técnicamente la Redundancia es clave para fallas, la protección equilibrada asegura consistencia).
+                answer: 0, // A
                 feedback: "Correcto. Evita puntos débiles que anulen el resto de la inversión."
             },
             {
@@ -542,10 +533,8 @@
             }
         ];
 
-
         let currentQuestion = 0;
         let score = 0;
-
 
         function loadQuestion() {
             const quizDiv = document.getElementById('quiz');
@@ -557,11 +546,9 @@
             feedbackDiv.className = 'feedback';
             nextBtn.disabled = true;
 
-
             // Actualizar Barra de Progreso
             const progress = ((currentQuestion) / questions.length) * 100;
             document.getElementById('progressBar').style.width = `${progress}%`;
-
 
             let html = `<div class="question-card active">
                 <div class="question-text">${currentQuestion + 1}. ${q.q}</div>
@@ -571,11 +558,9 @@
                 html += `<button class="option-btn" onclick="checkAnswer(${index}, this)">${opt}</button>`;
             });
 
-
             html += `</div></div>`;
             quizDiv.innerHTML = html;
         }
-
 
         function checkAnswer(selectedIndex, btnElement) {
             const q = questions[currentQuestion];
@@ -583,10 +568,8 @@
             const btns = document.querySelectorAll('.option-btn');
             const nextBtn = document.getElementById('nextBtn');
 
-
             // Deshabilitar botones para evitar múltiples clics
             btns.forEach(btn => btn.disabled = true);
-
 
             if (selectedIndex === q.answer) {
                 btnElement.classList.add('correct');
@@ -606,10 +589,8 @@
                 feedbackDiv.style.color = "#721c24";
             }
 
-
             nextBtn.disabled = false;
         }
-
 
         function nextQuestion() {
             currentQuestion++;
@@ -620,7 +601,6 @@
             }
         }
 
-
         function showResults() {
             document.getElementById('quiz').style.display = 'none';
             document.getElementById('feedback').style.display = 'none';
@@ -630,7 +610,6 @@
             const scoreBoard = document.getElementById('scoreBoard');
             scoreBoard.style.display = 'block';
             document.getElementById('finalScore').innerText = score;
-
 
             const msg = document.getElementById('finalMessage');
             // Lógica de calificación (40 preguntas)
@@ -645,7 +624,6 @@
                 msg.style.color = "red";
             }
         }
-
 
         // Iniciar
         loadQuestion();
