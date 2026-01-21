@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen de Autodiagnóstico - Dominio 1</title>
+    <style>
+        :root {
+            --primary-color: #008000;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { text-align: center; color: #2c3e50; }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Barra de Progreso */
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 12px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Estadísticas */
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* Pregunta y Opciones */
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .option-item {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.1rem;
+        }
+
+        .option-item:hover {
+            background: #e9ecef;
+            border-color: #aaa;
+        }
+
+        /* Estilos de Feedback */
+        .option-item.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .option-item.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        /* Bloquear clics tras responder */
+        .disabled-options {
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        .feedback-msg {
+            min-height: 30px;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* Botones */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-reset { background-color: #555; }
+
+        /* Resultado Final */
+        #final-score-view {
+            display: none;
+            text-align: center;
+        }
+        .final-score-number {
+            font-size: 4rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Examen: Clase 02 Dominio 1 Tarea 1</h1>
+
+    <div class="container" id="quiz-view">
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        
+        <div class="stats-bar">
+            <span>Pregunta <span id="current-q">1</span> de 25</span>
+            <span>Puntaje: <span id="score">0</span></span>
+        </div>
+
+        <div class="question-text" id="question-text">Cargando pregunta...</div>
+        
+        <ul class="options-list" id="options-list">
+            </ul>
+
+        <div class="feedback-msg" id="feedback"></div>
+
+        <div class="controls">
+            <button class="btn" id="prev-btn" onclick="changeQuestion(-1)" disabled>Anterior</button>
+            <button class="btn btn-reset" onclick="resetExam()">Reiniciar</button>
+            <button class="btn" id="next-btn" onclick="changeQuestion(1)">Siguiente</button>
+        </div>
+    </div>
+
+    <div class="container" id="final-score-view">
+        <h2>¡Examen Completado!</h2>
+        <p>Tu calificación final es:</p>
+        <div class="final-score-number"><span id="final-score">0</span>/25</div>
+        <p id="final-message"></p>
+        <button class="btn btn-reset" onclick="resetExam()">Intentar de nuevo</button>
+    </div>
+
+<script>
+    const questions = [
+        { q: "¿Cuál es el objetivo principal del Programa de Seguridad?", o: ["Instalar cámaras.", "Mitigar riesgos y soportar los objetivos del negocio.", "Vigilar a los empleados.", "Cumplir leyes locales solamente."], a: 1 },
+        { q: "¿Qué término describe el 'cuidado razonable' para evitar cometer una negligencia?", o: ["Fuerza mayor", "Responsabilidad Civil", "Debida Diligencia", "Convergencia"], a: 2 },
+        { q: "¿Qué es la 'Responsabilidad' (Liability) en seguridad?", o: ["Obligación legal de responder por daños.", "La habilidad de responder rápido.", "Tener seguro médico.", "Contratar guardias."], a: 0 },
+        { q: "¿Qué herramienta compara 'dónde estamos' vs 'dónde deberíamos estar'?", o: ["FODA", "Gap Analysis (Brechas)", "Diagrama de flujo", "Manual de crisis"], a: 1 },
+        { q: "¿Cómo se definen las 'Políticas'?", o: ["Reglas de oro emitidas por la Alta Dirección (QUÉ hacer).", "Pasos detallados (CÓMO hacerlo).", "Sugerencias opcionales.", "Especificaciones técnicas."], a: 0 },
+        { q: "Las instrucciones paso a paso sobre CÓMO cumplir una política son:", o: ["Estándares", "Directrices", "Procedimientos", "Misiones"], a: 2 },
+        { q: "¿Qué es la 'Convergencia' en seguridad?", o: ["Unión de seguridad física y ciberseguridad.", "Unión de dos empresas.", "Reunión de guardias.", "Mezcla de tecnologías viejas."], a: 0 },
+        { q: "Objetivo principal de la 'Seguridad en Profundidad':", o: ["Un solo muro alto.", "Reducir costos.", "Múltiples capas que el adversario debe vencer secuencialmente.", "Usar solo electrónica."], a: 2 },
+        { q: "Concepto que evita 'puntos únicos de fallo':", o: ["Redundancia", "Disuasión", "Eficiencia", "Automatización"], a: 0 },
+        { q: "¿Qué significan las siglas CPTED?", o: ["Control Policial Técnico", "Prevención del Crimen a través del Diseño Ambiental", "Centro de Protección de Edificios", "Ninguna"], a: 1 },
+        { q: "¿Para qué sirve la función de 'demora'?", o: ["Para atrapar al ladrón.", "Para dar tiempo entre la detección y la respuesta.", "Para asustar.", "Para grabar video."], a: 1 },
+        { q: "¿Qué es la 'Visión' para un programa de seguridad?", o: ["Lo que hacemos hoy.", "Aspiración futura a largo plazo en los objetivos de la empresa.", "Reglamento interno.", "Presupuesto anual."], a: 1 },
+        { q: "Declaración que define el propósito actual (qué hacemos y para quién):", o: ["Visión", "Misión", "Valores", "Estrategia"], a: 1 },
+        { q: "El 'número de incidentes mensuales' es un ejemplo de:", o: ["Misión", "Visión", "Métrica", "Riesgo"], a: 2 },
+        { q: "¿Qué es un KPI?", o: ["Cualquier dato.", "Indicador que permite medir el desempeño.", "Una opinión.", "Un tipo de cámara."], a: 1 },
+        { q: "Datos numéricos y objetivos (costos, cantidades) son:", o: ["Cualitativos", "Cuantitativos", "Subjetivos", "Informales"], a: 1 },
+        { q: "Datos basados en percepción (encuestas) son:", o: ["Cuantitativos", "Cualitativos", "Financieros", "Estadísticos"], a: 1 },
+        { q: "¿Qué métrica justifica financieramente el programa?", o: ["FODA", "ROI (Retorno de la Inversión)", "PESTEL", "KPI"], a: 1 },
+        { q: "Herramienta que evalúa factores internos y externos (Fortalezas, Amenazas...):", o: ["PESTEL", "FODA (SWOT)", "Gap Analysis", "Auditoría"], a: 1 },
+        { q: "¿Qué analiza PESTEL?", o: ["Factores Políticos, Económicos, Sociales, etc.", "Solo tecnología.", "Solo el interior de la empresa.", "El desempeño de los guardias."], a: 0 },
+        { q: "Actuar como el adversario para probar las defensas se llama:", o: ["Blue Teaming", "Red Teaming", "White Hat", "Auditoría de papel"], a: 1 },
+        { q: "Función principal de un Checklist:", o: ["Hacer el trabajo más lento.", "Garantizar consistencia y objetividad.", "Evaluar al gerente.", "Ahorrar papel."], a: 1 },
+        { q: "¿Qué es un 'Activo'?", o: ["Dinero solamente.", "El edificio.", "Cualquier cosa con valor para la organización.", "Los empleados solamente."], a: 2 },
+        { q: "Ecuación básica de Riesgo:", o: ["Probabilidad x Impacto", "Activo + Amenaza", "Costo / Beneficio", "Tiempo + Distancia"], a: 0 },
+        { q: "¿Qué es 'Protección Equilibrada'?", o: ["Gastar lo mismo en todo.", "Tiempo de retardo consistente en todas las rutas del adversario.", "Tener muchos guardias.", "Usar la misma marca de cámaras."], a: 1 }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+    let userAnswers = new Array(questions.length).fill(null);
+
+    const qText = document.getElementById('question-text');
+    const optList = document.getElementById('options-list');
+    const feedback = document.getElementById('feedback');
+    const scoreSpan = document.getElementById('score');
+    const currentQSpan = document.getElementById('current-q');
+    const progressBar = document.getElementById('progress-bar');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    
+    const quizView = document.getElementById('quiz-view');
+    const finalView = document.getElementById('final-score-view');
+
+    function loadQuestion(index) {
+        if (index >= questions.length) {
+            showFinalScore();
+            return;
+        }
+
+        // --- CORRECCIÓN CLAVE ---
+        // Siempre reactivar opciones al cargar una nueva pregunta, 
+        // a menos que ya esté respondida en el historial.
+        optList.classList.remove('disabled-options'); 
+
+        const q = questions[index];
+        qText.textContent = `${index + 1}. ${q.q}`;
+        optList.innerHTML = '';
+        feedback.textContent = '';
+        currentQSpan.textContent = index + 1;
+        
+        q.o.forEach((opt, i) => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+            li.textContent = opt;
+            li.onclick = () => selectAnswer(i, li);
+            
+            // Si ya se respondió antes, aplicar estilos y re-bloquear
+            if (userAnswers[index] !== null) {
+                if (i === q.a) li.classList.add('correct');
+                if (i === userAnswers[index] && i !== q.a) li.classList.add('incorrect');
+            }
+            optList.appendChild(li);
+        });
+
+        // Si esta pregunta específica ya fue respondida, bloqueamos de nuevo
+        if (userAnswers[index] !== null) {
+            optList.classList.add('disabled-options');
+            const correct = userAnswers[index] === q.a;
+            feedback.textContent = correct ? "¡Correcto!" : "Incorrecto.";
+            feedback.style.color = correct ? "green" : "red";
+        }
+
+        updateProgress();
+        
+        prevBtn.disabled = (index === 0);
+        nextBtn.textContent = (index === questions.length - 1) ? "Finalizar" : "Siguiente";
+    }
+
+    function selectAnswer(selectedIndex, element) {
+        if (userAnswers[currentIdx] !== null) return; 
+
+        userAnswers[currentIdx] = selectedIndex;
+        const correctIndex = questions[currentIdx].a;
+        const options = optList.children;
+
+        // Bloquear tras responder
+        optList.classList.add('disabled-options');
+
+        if (selectedIndex === correctIndex) {
+            element.classList.add('correct');
+            feedback.textContent = "¡Correcto!";
+            feedback.style.color = "green";
+            score++;
+        } else {
+            element.classList.add('incorrect');
+            options[correctIndex].classList.add('correct'); 
+            feedback.textContent = "Incorrecto.";
+            feedback.style.color = "red";
+        }
+        scoreSpan.textContent = score;
+    }
+
+    function changeQuestion(dir) {
+        const nextIdx = currentIdx + dir;
+        
+        if (nextIdx >= questions.length) {
+            showFinalScore();
+        } else {
+            currentIdx = nextIdx;
+            loadQuestion(currentIdx);
+        }
+    }
+
+    function updateProgress() {
+        const pct = ((currentIdx + 1) / questions.length) * 100;
+        progressBar.style.width = pct + "%";
+    }
+
+    function showFinalScore() {
+        quizView.style.display = 'none';
+        finalView.style.display = 'block';
+        document.getElementById('final-score').textContent = score;
+        
+        const pct = (score / questions.length) * 100;
+        const msg = document.getElementById('final-message');
+        if(pct >= 80) msg.textContent = "¡Excelente trabajo!";
+        else if(pct >= 60) msg.textContent = "Buen trabajo, pero repasa algunos conceptos.";
+        else msg.textContent = "Se recomienda estudiar más el material.";
+    }
+
+    function resetExam() {
+        currentIdx = 0;
+        score = 0;
+        userAnswers.fill(null);
+        scoreSpan.textContent = 0;
+        
+        finalView.style.display = 'none';
+        quizView.style.display = 'block';
+        
+        // Asegurar que se quita el bloqueo al reiniciar
+        optList.classList.remove('disabled-options');
+        
+        loadQuestion(0);
+    }
+
+    loadQuestion(0);
+
+</script>
+</body>
+</html>
+
