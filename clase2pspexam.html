@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen de autodiagnóstico PSP - Control de Accesos 2026</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #c0392b;
+            --light: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f7;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Estilos del Contenedor Principal */
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Encabezado */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 15px;
+        }
+
+        h1 { font-size: 1.6rem; color: var(--primary); margin: 0 0 10px 0; }
+        .subtitle { font-size: 1rem; color: #7f8c8d; margin-bottom: 5px; }
+        .credits { font-size: 0.85rem; color: #95a5a6; margin-top: 10px; font-style: italic; }
+        
+        /* Barra de Progreso */
+        .progress-container {
+            background-color: #e0e0e0;
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Preguntas y Opciones */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+            position: relative;
+        }
+
+        .option-btn:hover:not(.disabled) {
+            border-color: var(--accent);
+            background-color: #f0f8ff;
+        }
+
+        /* Estados de respuesta */
+        .option-btn.correct {
+            border-color: var(--success);
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .option-btn.incorrect {
+            border-color: var(--error);
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        /* Feedback Inmediato */
+        .feedback-msg {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* Botones de Navegación */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--light);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-prev { background-color: #95a5a6; color: white; }
+        .btn-next { background-color: var(--primary); color: white; }
+        .btn-reset { background-color: var(--error); color: white; }
+        
+        .btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        /* Pantalla de Resultados */
+        #results-screen {
+            display: none;
+        }
+
+        .score-card {
+            text-align: center;
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .score-big {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th { background-color: var(--primary); color: white; }
+        
+        .status-ok { color: var(--success); font-weight: bold; }
+        .status-bad { color: var(--error); font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Examen de autodiagnóstico PSP</h1>
+        <div class="subtitle">Control de Accesos 2026</div>
+        <div class="subtitle">Grupo de estudio CEPI CSO International</div>
+        <div class="credits">
+            Autor: José María Piscione<br>
+            Desarrollador: Cristian M
+        </div>
+    </header>
+
+    <div id="quiz-screen" class="card">
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div class="header-info" style="display:flex; justify-content:space-between; color:#7f8c8d; font-size:0.9rem; margin-bottom:10px;">
+            <span id="question-number">Pregunta 1 de 40</span>
+            <span id="score-live">Aciertos: 0</span>
+        </div>
+
+        <div id="question-container">
+            <div class="question-text" id="question-text">Cargando pregunta...</div>
+            <div class="options-grid" id="options-container">
+                </div>
+            <div id="feedback" class="feedback-msg"></div>
+        </div>
+
+        <div class="nav-buttons">
+            <div>
+                <button class="btn btn-reset" onclick="resetQuiz()">Reiniciar Todo</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-prev" id="btn-prev" onclick="prevQuestion()" disabled>Anterior</button>
+                <button class="btn btn-next" id="btn-next" onclick="nextQuestion()">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="results-screen" class="card">
+        <h2 style="text-align:center;">Reporte Final de Resultados</h2>
+        <div class="score-card">
+            <div>Tu Calificación Final</div>
+            <div class="score-big"><span id="final-score">0</span>%</div>
+            <div id="final-stats">0 de 40 correctas</div>
+        </div>
+
+        <div id="detailed-report">
+            </div>
+
+        <button class="btn btn-reset" onclick="resetQuiz()" style="width:100%; margin-top:20px; padding: 15px;">🔄 Reiniciar Examen</button>
+    </div>
+
+    <script>
+        // --- BASE DE DATOS DE PREGUNTAS ---
+        const questions = [
+            {
+                q: "1.- Dos formas de combatir automáticamente el ir montado (“piggy back”) y entrar colado después de la apertura del portal (“tail gating“ en un acceso, inmediatamente por detrás de quien lo hace habilitado con su debida credencial de control de acceso), son:",
+                options: [
+                    "a. Software de passback (no permite que alguien entre si ya está registrado como estando adentro, ni salir si aún no ha entrado) y molinete óptico",
+                    "b. Trampas esclusas de punto de acceso y vigilancia de control de acceso",
+                    "c. Cámaras de CCTV y sistemas de alarmas de intrusión",
+                    "d. Software de anti-passback y molinete."
+                ],
+                correct: 3 // d
+            },
+            {
+                q: "2.- Los sistemas de control de acceso se basan en considerar que la identificación está dada por:",
+                options: [
+                    "a) Lo que una persona posee",
+                    "b) Lo que una persona sabe",
+                    "c) Una característica personal única de cada persona",
+                    "d) Las tres opciones anteriores",
+                    "e) Las opciones a y b"
+                ],
+                correct: 3 // d
+            },
+            {
+                q: "3.- Las barreras determinan",
+                options: [
+                    "a. Frecuencia de ingresos y número de canales.",
+                    "b. Capacidad de procesamiento (de objetos, personas y/o vehículos que desean ingresar), e identificación del personal",
+                    "c. Número de puestos e identificación del personal",
+                    "d. Distancia de apartamiento (enfrentamiento a la barrera) capacidad de procesamiento."
+                ],
+                correct: 3 // d
+            },
+            {
+                q: "4.- Qué características deberían tener en común un sistema de control de accesos y un sistema de control de presentismo?",
+                options: [
+                    "a) Utilizan los mismos paneles controladores",
+                    "b) Utilizan los mismos lectores",
+                    "c) Utilizan las mismas credenciales",
+                    "d) Todas las anteriores"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "5.- Qué sucede con el Indice de falso rechazo y el Indice de falsa aceptación al aumentar el umbral de sensibilidad de un dispositivo biométrico?",
+                options: [
+                    "a) Ambos suben",
+                    "b) El primero sube y el segundo baja",
+                    "c) El primero baja y el segundo sube",
+                    "d) No varían"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "6. Un portal de acceso es un punto de control que considera la integración de :",
+                options: [
+                    "A. Puertas y Sistemas de Control de acceso",
+                    "B. infraestructura física",
+                    "C. dispositivos de identificación",
+                    "D. procedimientos y personal",
+                    "E. capacidad de procesamiento del flujo",
+                    "F. todos los anteriores",
+                    "G. todos menos uno de los anteriores"
+                ],
+                correct: 5 // F
+            },
+            {
+                q: "7.- Desde la perspectiva de ingeniería de accesos, ¿qué determina un portal de acceso como sistema integrado (lector + autenticación + autorización + barrera)?",
+                options: [
+                    "a. La frecuencia de uso y el dimensionamiento de los carriles de aproximación",
+                    "b. La capacidad de procesamiento del flujo y la modalidad de identificación requerida",
+                    "c. La cantidad de puestos de control y la asignación de personal de vigilancia",
+                    "d. La distancia de apartamiento y el tipo de barrera vehicular compatible"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "8. ¿Cuál de las siguientes prácticas es considerada una política sana de control de llaves?",
+                options: [
+                    "a. Entregar llaves maestras a contratistas de mantenimiento",
+                    "b. Permitir la réplica de llaves bajo supervisión",
+                    "c. Mantener registros estrictos de distribución y devolución",
+                    "d. Utilizar combinaciones únicas de gran maestro en todo el edificio"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "9. ¿Cómo se compensa el riesgo de las llaves maestras?",
+                options: [
+                    "A. Empleando submaestras",
+                    "B. Minimización",
+                    "C. Control estricto",
+                    "D. Segmentación",
+                    "E. Llaves patentadas",
+                    "F. Auditoría",
+                    "G. Recilindrado",
+                    "H. Políticas formales",
+                    "I. Sustitución progresiva por control electrónico",
+                    "J. Todas las anteriores de la B a la I."
+                ],
+                correct: 9 // J
+            },
+            {
+                q: "10. ¿Cuál es una limitación operativa del pestillo eléctrico en puertas de salida de emergencia?",
+                options: [
+                    "a. No puede integrarse con lectores de tarjeta",
+                    "b. Puede trabarse en la placa de tope si hay presión sobre la puerta",
+                    "c. No admite modo fail-secure",
+                    "d. No puede instalarse en marcos metálicos"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "11. ¿Qué distingue a la cerradura electromagnética respecto de otras cerraduras eléctricas?",
+                options: [
+                    "a. No requiere energía para mantenerse cerrada",
+                    "b. Su fuerza de retención se mide en libras de tracción",
+                    "c. No puede integrarse a sistemas de control de acceso",
+                    "d. No puede instalarse en puertas de vidrio"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "12. ¿Cuál de los atributos de identificación es considerado más difícil de vencer?",
+                options: [
+                    "a. Lo que la persona tiene",
+                    "b. Lo que la persona sabe",
+                    "c. Lo que la persona es o hace",
+                    "d. Lo que la persona porta como documento físico"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "13. ¿Cuál es una ventaja operativa del uso de PIN combinado con tarjeta?",
+                options: [
+                    "a. Reduce la necesidad de paneles",
+                    "b. Permite eliminar la base de datos de usuarios",
+                    "c. Incrementa la seguridad al agregar un segundo factor",
+                    "d. Evita la necesidad de credenciales físicas"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "14. ¿Cuál es el propósito principal del software anti-passback?",
+                options: [
+                    "a. Evitar que un usuario ingrese sin presentar credencial",
+                    "b. Impedir el uso repetido de la misma credencial sin haber salido",
+                    "c. Detectar tarjetas clonadas",
+                    "d. Registrar la hora de ingreso y salida"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "15. ¿Qué tipo de dispositivo de entrada puede diseñarse mejor para ser más preciso en evitar tailgating?",
+                options: [
+                    "a. Puertas oscilantes",
+                    "b. Molinetes ópticos",
+                    "c. Puertas giratorias",
+                    "d. Vestíbulos"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "16.-¿Cuál es el criterio para elegir entre fail-safe y fail-secure en el portal de un área crítica que combina evacuación y protección de activos?",
+                options: [
+                    "a. Priorizar siempre fail-secure por seguridad patrimonial",
+                    "b. Priorizar siempre fail-safe por seguridad humana",
+                    "c. Determinar el modo según el análisis de riesgo y la función primaria del portal",
+                    "d. Elegir el modo según el tipo de lector instalado"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "17.¿Cuál es la limitación crítica de las cerraduras electromagnéticas en puertas de salida?",
+                options: [
+                    "a. No pueden operar con baterías",
+                    "b. Requieren energía continua para mantenerse cerradas",
+                    "c. No pueden integrarse con sensores de puerta",
+                    "d. No permiten monitoreo de estado"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "18. ¿Cuál es la debilidad estructural del atributo “lo que la persona sabe”?",
+                options: [
+                    "a. No puede ser compartido",
+                    "b. No puede ser observado",
+                    "c. Es altamente transferible y susceptible a ingeniería social",
+                    "d. Requiere hardware especializado"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "19. ¿Qué combinación de factores ofrece el mayor nivel de resistencia ante ataques de préstamo de credenciales?",
+                options: [
+                    "a. Tarjeta + PIN",
+                    "b. Tarjeta + contraseña",
+                    "c. Biometría + tarjeta",
+                    "d. Biometría + PIN"
+                ],
+                correct: 3 // d
+            },
+            {
+                q: "20. ¿Cuál es la razón por la que el anti-passback requiere sincronización precisa entre puntos de entrada y salida?",
+                options: [
+                    "a. Para evitar colas en los accesos",
+                    "b. Para impedir que el sistema bloquee usuarios legítimos",
+                    "c. Para reducir el uso de memoria del panel",
+                    "d. Para permitir auditorías horarias"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "21. ¿Cuál es el principio que justifica la instalación de un vestibulo (mantrap/esclusa personal) en áreas de muy alto riesgo?",
+                options: [
+                    "a. Reducir el tiempo de tránsito",
+                    "b. Permitir el ingreso simultáneo de múltiples personas",
+                    "c. Crear una barrera secuencial que permita verificación redundante",
+                    "d. Evitar la necesidad del uso de biometría"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "22. Según el enfoque de capas del Estándar PAP, ¿cuál es el error más crítico al integrar control de acceso con CCTV?",
+                options: [
+                    "a. Usar cámaras con demasiada resolución",
+                    "b. No alinear el evento de acceso con la evidencia visual en tiempo real",
+                    "c. Instalar cámaras en ángulos superiores a 45°",
+                    "d. No utilizar almacenamiento redundante"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "23. ¿Cuál es el criterio para determinar si un punto debe tener autenticación simple o múltiple?",
+                options: [
+                    "a. El costo del lector",
+                    "b. La cantidad de usuarios",
+                    "c. El nivel de riesgo asociado al activo protegido",
+                    "d. La disponibilidad de biometría"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "24. ¿Qué condición hace inapropiada una cerradura electromagnética en un área de contención?",
+                options: [
+                    "a. Su fuerza de retención",
+                    "b. Su naturaleza fail-safe",
+                    "c. Su compatibilidad con sensores",
+                    "d. Su instalación en marcos metálicos"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "25.- Un centro de datos de misión crítica tiene un flujo constante de técnicos externos. La puerta principal está equipada con tarjeta + PIN, pero se detectaron múltiples incidentes donde un técnico ingresó con su tarjeta y luego permitió el ingreso de un colega sin credencial (“piggybacking”). La gerencia quiere una solución que reduzca el riesgo de ingreso no autorizado sin afectar la operación continua.¿Qué medida es más adecuada para este escenario?",
+                options: [
+                    "a. Reemplazar tarjeta + PIN por biometría obligatoria",
+                    "b. Instalar un mantrap con control secuencial y sensores de presencia",
+                    "c. Eliminar el PIN para acelerar el tránsito",
+                    "d. Implementar anti-passback estricto sin modificar la arquitectura física"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "26. ¿Qué dispositivo es más adecuado para puertas de salida con alta presión de evacuación?",
+                options: [
+                    "a. Cerradura electromagnética certificada",
+                    "b. Pestillo eléctrico certificado",
+                    "c. Barra antipánico certificada",
+                    "d. Cerradura de palanca reforzada certificada"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "27. ¿Qué condición invalida el uso de fail-secure en una salida?",
+                options: [
+                    "a. Hard anti-passback",
+                    "b. Requerimiento normativo de evacuación inmediata",
+                    "c. Presencia de CCTV",
+                    "d. Uso de lectores en ambos lados del portal"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "28. ¿Qué riesgo introduce una cerradura eléctrica mal integrada al sistema de incendio?",
+                options: [
+                    "a. Aumento del consumo energético",
+                    "b. Apertura simultánea de todas las puertas",
+                    "c. Bloqueo de evacuación en caso de alarma",
+                    "d. Activación de alarmas falsa"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "29. ¿Qué ventaja operativa tiene el uso de sensores de puerta en cerraduras eléctricas?",
+                options: [
+                    "a. Reducen el consumo energético",
+                    "b. Permiten monitorear estado real de cierre",
+                    "c. Eliminan la necesidad de paneles",
+                    "d. Sustituyen al control de acceso"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "30. ¿Qué condición invalida la autenticación multifactor?",
+                options: [
+                    "A. Uso de dos factores del mismo tipo",
+                    "B. Uso de biometría y tarjeta",
+                    "C. Uso de PIN y contraseña",
+                    "D. Uso de tarjeta y PIN"
+                ],
+                correct: 0 // A
+            },
+            {
+                q: "31. ¿Qué riesgo aparece cuando se usa reconocimiento facial sin supervisión humana?",
+                options: [
+                    "a. Aumento del tiempo de tránsito",
+                    "b. Falsos positivos",
+                    "c. Incompatibilidad con molinetes",
+                    "d. Necesidad de iluminación artificial"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "32. ¿Qué función cumple el “estado lógico” en control de acceso?",
+                options: [
+                    "A. Determinar el nivel de batería",
+                    "B. Registrar la temperatura del lector",
+                    "C. Controlar la fuerza del electroimán",
+                    "D. Indicar si un usuario está dentro o fuera"
+                ],
+                correct: 3 // D
+            },
+            {
+                q: "33. ¿Qué error crítico ocurre al integrar CCTV con control de acceso sin correlación de eventos?",
+                options: [
+                    "a. Aumento del almacenamiento",
+                    "b. Pérdida de evidencia contextual",
+                    "c. Reducción de la resolución",
+                    "d. Aumento del tiempo de respuesta"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "34. ¿Qué capa del PAP se ve afectada si falla la autenticación?",
+                options: [
+                    "a. Detección",
+                    "b. Disuasión",
+                    "c. Demora",
+                    "d. Respuesta"
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "35. ¿Qué condición invalida la capa de disuasión?",
+                options: [
+                    "a. Falta de señalización",
+                    "b. Uso de cámaras visibles",
+                    "c. Uso de iluminación perimetral",
+                    "d. Presencia de guardia"
+                ],
+                correct: 0 // a
+            },
+            {
+                q: "36. ¿Qué indicador sugiere riesgo de abuso de credenciales?",
+                options: [
+                    "a. Uso frecuente de PIN",
+                    "b. Ingresos sin salida registrada",
+                    "c. Uso de tarjetas RFID",
+                    "d. Cambios de turno"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "37. ¿Qué política reduce el riesgo de préstamo de credenciales?",
+                options: [
+                    "a. Uso exclusivo de tarjetas",
+                    "b. Autenticación multifactor",
+                    "c. Eliminación de biometría",
+                    "d. Uso de PIN compartidos"
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "38. ¿Qué riesgo aparece cuando un guardia controla manualmente un acceso sin registro electrónico?",
+                options: [
+                    "A. Aumento del tiempo de tránsito",
+                    "B. Incompatibilidad con CCTV",
+                    "C. Necesidad de iluminación adicional",
+                    "D. Pérdida de trazabilidad"
+                ],
+                correct: 3 // D
+            },
+            {
+                q: "39. ¿Cuál de los siguientes elementos no forma parte de la integración funcional de un portal de acceso, aun cuando suele estar físicamente asociado a él?",
+                options: [
+                    "a. La infraestructura física que soporta el portal",
+                    "b. Los dispositivos de identificación utilizados para autenticar usuarios",
+                    "c. Los procedimientos operativos y el personal asignado",
+                    "d. La capacidad de procesamiento del flujo de personas o vehículos",
+                    "e. La iluminación perimetral del área donde se encuentra el portal",
+                    "f. Ninguno de los anteriores"
+                ],
+                correct: 4 // e
+            },
+            {
+                q: "40. Desde la perspectiva de ingeniería de accesos, ¿cuál de los siguientes elementos es indispensable para que un portal de acceso funcione como un sistema integrado y no simplemente como un punto de paso, aun cuando todos los demás elementos estén presentes?",
+                options: [
+                    "a. La infraestructura física que soporta el montaje del portal",
+                    "b. La existencia de procedimientos operativos y personal asignado",
+                    "c. La capacidad de procesamiento del flujo en relación con la modalidad de identificación",
+                    "d. La presencia de dispositivos de identificación compatibles con el sistema",
+                    "e. La instalación de puertas y un sistema de control de acceso",
+                    "f. Ninguno de los anteriores: todos son necesarios pero solo uno determina la integración funcional"
+                ],
+                correct: 2 // c
+            }
+        ];
+
+        // --- LÓGICA DE LA APLICACIÓN ---
+        let currentQuestionIndex = 0;
+        let userResponses = new Array(questions.length).fill(null); // Guarda indices seleccionados
+        let score = 0;
+
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackDiv = document.getElementById('feedback');
+        const btnNext = document.getElementById('btn-next');
+        const btnPrev = document.getElementById('btn-prev');
+        const progressBar = document.getElementById('progress-bar');
+        const qNumberSpan = document.getElementById('question-number');
+        const liveScoreSpan = document.getElementById('score-live');
+
+        function loadQuestion(index) {
+            const q = questions[index];
+            questionText.textContent = q.q;
+            qNumberSpan.textContent = `Pregunta ${index + 1} de ${questions.length}`;
+            
+            // Barra de progreso
+            const progress = ((index + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Limpiar opciones
+            optionsContainer.innerHTML = '';
+            feedbackDiv.style.display = 'none';
+            feedbackDiv.className = 'feedback-msg';
+
+            // Generar botones de opciones
+            q.options.forEach((opt, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => selectOption(i);
+                
+                // Si ya fue respondida, restaurar estado
+                if (userResponses[index] !== null) {
+                    btn.classList.add('disabled');
+                    if (i === q.correct) {
+                        btn.classList.add('correct');
+                    }
+                    if (i === userResponses[index] && i !== q.correct) {
+                        btn.classList.add('incorrect');
+                    }
+                }
+                
+                optionsContainer.appendChild(btn);
+            });
+
+            // Si ya fue respondida, mostrar feedback
+            if (userResponses[index] !== null) {
+                showFeedback(userResponses[index] === q.correct, q.options[q.correct]);
+            }
+
+            // Gestionar botones navegación
+            btnPrev.disabled = index === 0;
+            if (index === questions.length - 1) {
+                btnNext.textContent = "Ver Reporte Final";
+                btnNext.onclick = finishQuiz;
+            } else {
+                btnNext.textContent = "Siguiente";
+                btnNext.onclick = nextQuestion;
+            }
+        }
+
+        function selectOption(selectedIndex) {
+            // Prevenir cambio de respuesta
+            if (userResponses[currentQuestionIndex] !== null) return;
+
+            const q = questions[currentQuestionIndex];
+            userResponses[currentQuestionIndex] = selectedIndex;
+            
+            // Actualizar puntaje
+            if (selectedIndex === q.correct) {
+                score++;
+                updateLiveScore();
+            }
+
+            // Actualizar UI
+            const buttons = optionsContainer.children;
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.add('disabled');
+                if (i === q.correct) {
+                    buttons[i].classList.add('correct');
+                } else if (i === selectedIndex) {
+                    buttons[i].classList.add('incorrect');
+                }
+            }
+
+            showFeedback(selectedIndex === q.correct, q.options[q.correct]);
+        }
+
+        function showFeedback(isCorrect, correctText) {
+            feedbackDiv.style.display = 'block';
+            if (isCorrect) {
+                feedbackDiv.style.backgroundColor = '#d4edda';
+                feedbackDiv.style.color = '#155724';
+                feedbackDiv.textContent = "¡Correcto!";
+            } else {
+                feedbackDiv.style.backgroundColor = '#f8d7da';
+                feedbackDiv.style.color = '#721c24';
+                feedbackDiv.textContent = `Incorrecto. La respuesta correcta es: ${correctText}`;
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion(currentQuestionIndex);
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion(currentQuestionIndex);
+            }
+        }
+
+        function updateLiveScore() {
+            liveScoreSpan.textContent = `Aciertos: ${score}`;
+        }
+
+        function finishQuiz() {
+            quizScreen.style.display = 'none';
+            resultsScreen.style.display = 'block';
+            generateReport();
+        }
+
+        function generateReport() {
+            const percentage = ((score / questions.length) * 100).toFixed(1);
+            document.getElementById('final-score').textContent = percentage;
+            document.getElementById('final-stats').textContent = `${score} de ${questions.length} respuestas correctas`;
+
+            const reportDiv = document.getElementById('detailed-report');
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Pregunta</th>
+                        <th>Tu Respuesta</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            
+            questions.forEach((q, i) => {
+                const userIndex = userResponses[i];
+                const isCorrect = userIndex === q.correct;
+                const userText = userIndex !== null ? q.options[userIndex] : "Sin responder";
+                const statusClass = isCorrect ? "status-ok" : "status-bad";
+                const statusText = isCorrect ? "CORRECTO" : `INCORRECTO (Era: ${q.options[q.correct]})`;
+
+                html += `<tr>
+                    <td>${i + 1}</td>
+                    <td>${q.q.substring(0, 50)}...</td>
+                    <td>${userText}</td>
+                    <td class="${statusClass}">${statusText}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table>`;
+            reportDiv.innerHTML = html;
+        }
+
+        function resetQuiz() {
+            if(confirm("¿Estás seguro de que quieres reiniciar el examen? Se perderá todo el progreso.")) {
+                currentQuestionIndex = 0;
+                score = 0;
+                userResponses.fill(null);
+                updateLiveScore();
+                resultsScreen.style.display = 'none';
+                quizScreen.style.display = 'flex';
+                loadQuestion(0);
+            }
+        }
+
+        // Iniciar
+        loadQuestion(0);
+    </script>
+</body>
+</html>
