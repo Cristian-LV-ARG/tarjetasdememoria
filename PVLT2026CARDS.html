@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards: Prevención de la Violencia en el Lugar de Trabajo</title>
+    <style>
+        :root {
+            --primary-color: #008000; /* Verde ASIS */
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --card-front-bg: #ffffff;
+            --card-back-bg: #003366; /* Azul oscuro */
+            --card-back-text: #ffffff;
+            --accent: #3498db;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Estilos de la Portada */
+        .start-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .portada-title {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .portada-info {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .portada-info strong {
+            color: #2c3e50;
+        }
+
+        /* Contenedor Principal de Flashcards */
+        #flashcard-screen {
+            display: none;
+            width: 100%;
+            max-width: 650px;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .progress-container { width: 100%; background-color: #e0e0e0; border-radius: 10px; margin-bottom: 20px; height: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: var(--primary-color); width: 0%; transition: width 0.3s ease; }
+
+        /* Estructura de la Tarjeta */
+        .card-container { width: 100%; perspective: 1000px; }
+        .card {
+            width: 100%; height: 380px; position: relative; transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            border-radius: 15px;
+        }
+        .card.is-flipped { transform: rotateY(180deg); }
+
+        .card-face {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            border-radius: 15px; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; padding: 40px; box-sizing: border-box; text-align: center;
+        }
+
+        /* Títulos Superiores Fijos */
+        .card-title-top {
+            position: absolute;
+            top: 25px;
+            left: 0;
+            width: 100%;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .card-front .card-title-top { color: var(--primary-color); }
+        .card-back .card-title-top { color: #a8d5ff; }
+
+        /* Frente de la Tarjeta */
+        .card-front { background-color: var(--card-front-bg); border: 2px solid var(--primary-color); }
+        .card-front p { font-size: 1.6rem; font-weight: 600; color: #2c3e50; margin-top: 20px; }
+        .hint-text { position: absolute; bottom: 20px; font-size: 0.9rem; color: #888; font-style: italic; }
+
+        /* Dorso de la Tarjeta */
+        .card-back { background-color: var(--card-back-bg); color: var(--card-back-text); transform: rotateY(180deg); border: 2px solid var(--primary-color); }
+        .card-back p { font-size: 1.15rem; line-height: 1.6; margin-top: 20px; }
+
+        /* Controles */
+        .controls { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 30px; }
+        button { padding: 12px 25px; font-size: 1rem; border: none; border-radius: 50px; cursor: pointer; background-color: var(--primary-color); color: white; transition: background 0.3s, transform 0.2s; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        button:hover { background-color: #006600; transform: translateY(-2px); }
+        button:disabled { background-color: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-start { background-color: var(--primary-color); font-size: 1.1rem; padding: 15px 30px; margin-top: 10px; }
+        .btn-reset { background-color: #7f8c8d; font-size: 0.9rem; padding: 10px 20px; margin-top: 20px; }
+        .counter { font-size: 1.1rem; font-weight: bold; color: #555; }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen" class="start-card">
+        <h1 class="portada-title">Prevención de la Violencia en el Lugar de Trabajo</h1>
+        <div class="portada-info">
+            <p><strong>Academia CSO Internacional:</strong> Ing. José María Piscione</p>
+            <p><strong>Desarrollador:</strong> Abg. Cristian Daniel Molina</p>
+            <p><strong>Fecha de creación:</strong> 04/06/2026</p>
+        </div>
+        <button class="btn btn-start" onclick="startApp()">Comenzar Repaso</button>
+    </div>
+
+    <div id="flashcard-screen">
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="card-container">
+            <div class="card" id="flashcard" onclick="flipCard()">
+                <div class="card-face card-front">
+                    <div class="card-title-top">Concepto</div>
+                    <p id="front-text">Cargando...</p>
+                    <div class="hint-text">Haz clic para voltear</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="card-title-top">Definición Técnica y Aplicación</div>
+                    <p id="back-text">Cargando...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="prev-btn" onclick="changeCard(-1)">&#8592; Anterior</button>
+            <span class="counter"><span id="current-index">1</span> / <span id="total-count">11</span></span>
+            <button id="next-btn" onclick="changeCard(1)">Siguiente &#8594;</button>
+        </div>
+        
+        <button class="btn btn-reset" onclick="resetToStart()">Volver a la Portada</button>
+    </div>
+
+    <script>
+        const cardsData = [
+            { 
+                front: "Violencia en el Lugar de Trabajo", 
+                back: "Diversidad de comportamientos (actos, amenazas o conductas) que generan inquietud razonable por la seguridad física del personal o de terceros en un contexto vinculado a la organización." 
+            },
+            { 
+                front: "Alertas Tempranas (Red Flags)", 
+                back: "Indicadores conductuales o cambios repentinos en el comportamiento que preceden a un acto violento, como aislamiento, arrebatos de ira o fascinación por las armas." 
+            },
+            { 
+                front: "Sistema Centralizado de Informes", 
+                back: "Mecanismo que asegura que todos los informes de comportamientos problemáticos sean registrados y controlados de forma unificada, permitiendo identificar patrones de riesgo en el tiempo." 
+            },
+            { 
+                front: "Equipo de Gestión de Amenazas", 
+                back: "Grupo multidisciplinar (Seguridad, RR.HH., Legal) encargado de recibir, investigar y resolver informes de comportamientos inquietantes bajo protocolos de seguridad establecidos." 
+            },
+            { 
+                front: "Cribado o Filtrado del Riesgo de Violencia", 
+                back: "Análisis preliminar realizado por el equipo para determinar la urgencia de una situación y los pasos iniciales de gestión, sin llegar a ser una evaluación psicológica profunda." 
+            },
+            { 
+                front: "Evaluación del Riesgo de Violencia", 
+                back: "Proceso detallado realizado por un profesional cualificado para determinar el nivel de riesgo y las estrategias de mitigación específicas para una persona." 
+            },
+            { 
+                front: "Salvaguardia", 
+                back: "Deber organizacional de garantizar que nadie sufra daños, abusos o explotación como resultado de su contacto con la organización." 
+            },
+            { 
+                front: "Nexo Laboral", 
+                back: "Conexión legal y operativa entre un comportamiento y el entorno de trabajo, que incluye viajes, eventos corporativos y comunicaciones digitales fuera de oficina. Va más allá de los límites físicos o temporales de las tareas laborales contratadas." 
+            },
+            { 
+                front: "Mobbing / Acoso Laboral", 
+                back: "Patrón de comportamiento hostil y sistemático hacia un trabajador, diseñado para causar daño psicológico o forzar su desvinculación." 
+            },
+            { 
+                front: "Tirador Activo (Active Assailant)", 
+                back: "Individuo que intenta matar o herir activamente a personas en un área poblada. Requiere protocolos de respuesta inmediata como 'Correr, Esconderse, Luchar'." 
+            },
+            { 
+                front: "Herida Narcisista", 
+                back: "Fenómeno psicológico donde un individuo siente que su estatus o ego ha sido atacado, lo que puede actuar como catalizador para el resentimiento y la violencia. Las personas que atraviesan un diagnóstico por psicosis no siempre sostienen su motivación en emociones." 
+            }
+        ];
+
+        let currentIndex = 0;
+        const totalCards = cardsData.length;
+        
+        const startScreen = document.getElementById('start-screen');
+        const flashcardScreen = document.getElementById('flashcard-screen');
+        const cardElement = document.getElementById('flashcard');
+        const frontText = document.getElementById('front-text');
+        const backText = document.getElementById('back-text');
+        const progressBar = document.getElementById('progress-bar');
+        const currentIndexDisplay = document.getElementById('current-index');
+        const totalCountDisplay = document.getElementById('total-count');
+
+        document.getElementById('total-count').textContent = totalCards;
+
+        function startApp() {
+            startScreen.style.display = 'none';
+            flashcardScreen.style.display = 'flex';
+            currentIndex = 0;
+            loadCard(currentIndex);
+        }
+
+        function loadCard(index) {
+            // Asegurarse de que la tarjeta muestre el frente antes de cambiar el texto
+            cardElement.classList.remove('is-flipped');
+            
+            // Pequeño retraso para que la animación de volteo termine si estaba en el dorso
+            setTimeout(() => {
+                frontText.textContent = cardsData[index].front;
+                backText.textContent = cardsData[index].back;
+                currentIndexDisplay.textContent = index + 1;
+                updateProgress();
+            }, 150);
+        }
+
+        function flipCard() { 
+            cardElement.classList.toggle('is-flipped'); 
+        }
+
+        function changeCard(direction) {
+            const newIndex = currentIndex + direction;
+            if (newIndex >= 0 && newIndex < totalCards) {
+                currentIndex = newIndex;
+                loadCard(currentIndex);
+            }
+        }
+
+        function updateProgress() {
+            const pct = ((currentIndex + 1) / totalCards) * 100;
+            progressBar.style.width = pct + "%";
+            document.getElementById('prev-btn').disabled = (currentIndex === 0);
+            document.getElementById('next-btn').disabled = (currentIndex === totalCards - 1);
+        }
+
+        function resetToStart() {
+            flashcardScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+            cardElement.classList.remove('is-flipped');
+        }
+
+        // Navegación con teclado
+        document.addEventListener('keydown', (e) => {
+            if (flashcardScreen.style.display === 'flex') {
+                if (e.key === 'ArrowRight') changeCard(1);
+                if (e.key === 'ArrowLeft') changeCard(-1);
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault(); // Evita scroll con espacio
+                    flipCard();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
