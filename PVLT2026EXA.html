@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prevención de la Violencia en el Lugar de Trabajo</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #c0392b;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f7;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #quiz-screen {
+            justify-content: space-between;
+        }
+
+        /* Encabezados y Portada */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 15px;
+        }
+
+        .portada-title {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .portada-info {
+            font-size: 1.1rem;
+            color: #555;
+            text-align: center;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .portada-info strong {
+            color: var(--primary);
+        }
+
+        /* Barra de Progreso */
+        .progress-container {
+            background-color: #e0e0e0;
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Preguntas y Opciones */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+            position: relative;
+        }
+
+        .option-btn:hover:not(.disabled) {
+            border-color: var(--accent);
+            background-color: #f0f8ff;
+        }
+
+        .option-btn.correct {
+            border-color: var(--success);
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .option-btn.incorrect {
+            border-color: var(--error);
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .feedback-msg {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* Botones */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--light);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background 0.3s;
+            text-align: center;
+        }
+
+        .btn-start { background-color: var(--accent); color: white; display: block; margin: 0 auto; width: 200px; }
+        .btn-prev { background-color: #95a5a6; color: white; }
+        .btn-next { background-color: var(--primary); color: white; }
+        .btn-reset { background-color: var(--error); color: white; }
+
+        .btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        /* Pantallas Ocultas */
+        #quiz-screen, #info-screen, #results-screen {
+            display: none;
+        }
+
+        /* Pantalla de Info CSO */
+        .info-content {
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+        .info-content ul {
+            margin-top: 20px;
+            padding-left: 20px;
+        }
+        .info-content li {
+            margin-bottom: 15px;
+        }
+
+        /* Pantalla de Resultados */
+        .score-card {
+            text-align: center;
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .score-big {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th { background-color: var(--primary); color: white; }
+        
+        .status-ok { color: var(--success); font-weight: bold; }
+        .status-bad { color: var(--error); font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <div id="start-screen" class="card">
+        <h1 class="portada-title">Prevención de la Violencia en el Lugar de Trabajo</h1>
+        <div class="portada-info">
+            <p><strong>Academia CSO International:</strong> Ing. José María Piscione</p>
+            <p><strong>Desarrollador:</strong> Abg. Cristian Daniel Molina</p>
+            <p><strong>Fecha de creación:</strong> 06/04/2026</p>
+        </div>
+        <button class="btn btn-start" onclick="startQuiz()">Comenzar Examen</button>
+    </div>
+
+    <div id="quiz-screen" class="card">
+        <div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; color:#7f8c8d; font-size:0.9rem; margin-bottom:10px;">
+                <span id="question-number">Pregunta 1 de 30</span>
+                <span id="score-live">Aciertos: 0</span>
+            </div>
+
+            <div id="question-container">
+                <div class="question-text" id="question-text">Cargando pregunta...</div>
+                <div class="options-grid" id="options-container">
+                    </div>
+                <div id="feedback" class="feedback-msg"></div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <div>
+                <button class="btn btn-reset" onclick="resetQuiz()">Reiniciar</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-prev" id="btn-prev" onclick="prevQuestion()" disabled>Anterior</button>
+                <button class="btn btn-next" id="btn-next" onclick="nextQuestion()">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="info-screen" class="card">
+        <h2 style="color: var(--primary); text-align: center; border-bottom: 2px solid var(--light); padding-bottom: 10px;">PROGRAMA CSO INTERNACIONAL</h2>
+        <div class="info-content">
+            <ul>
+                <li>Más del 98% de los profesionales certificados de la República Argentina.</li>
+                <li>106 certificados CPP®, PSP®, PCI®, APP®. En la métrica certificados / aplicantes, el CSO Internacional supera largamente los resultados del siguiente mejor curso de preparación. En todas y cada una de las certificaciones, CPP®, PSP®, PCI®, APP®, el CSO Internacional tiene más Certificados/Miembros de Capítulos que los certificados de cualquier Capítulo Americano.</li>
+                <li>46 destacados egresados como profesores de las sesiones del CSO Internacional. Entre ellos, los 2 Directores actuales de la Junta de Estándares en ASIS, 32 Gerentes en corporaciones multinacionales y 14 Gerentes Regionales o Globales.</li>
+                <li>6 certificadas mujeres, superando largamente los resultados WIS del siguiente mejor curso de preparación.</li>
+                <li>Los primeros 5 certificados CPP® del Uruguay, fundadores del Capítulo ASIS R.O.U.</li>
+            </ul>
+            <p style="text-align: center; font-weight: bold; color: var(--accent); margin-top: 20px;">
+                Resultado Certificaciones 2025 = 3CPP 2APP 1PCI<br>
+                ¡(0) reprobados en los últimos 8 años!
+            </p>
+        </div>
+        <button class="btn btn-start" style="margin-top: 30px; width: 100%;" onclick="showResults()">Ver Reporte Final</button>
+    </div>
+
+    <div id="results-screen" class="card">
+        <h2 style="text-align:center; color: var(--primary);">Reporte Final de Resultados</h2>
+        <div class="score-card">
+            <div>Tu Calificación Final</div>
+            <div class="score-big"><span id="final-score">0</span>%</div>
+            <div id="final-stats">0 de 30 correctas</div>
+        </div>
+
+        <div id="detailed-report">
+            </div>
+
+        <button class="btn btn-reset" onclick="resetQuiz()" style="width:100%; margin-top:20px;">🔄 Volver a intentar el examen</button>
+    </div>
+
+    <script>
+        // BASE DE DATOS DE PREGUNTAS (30 Preguntas)
+        const questions = [
+            {
+                q: "1. Según el estándar ASIS WVPI.1-2011, ¿cómo se define 'Violencia en el lugar de trabajo'?",
+                options: [
+                    "a) Únicamente como el uso de fuerza física que cause lesiones corporales.",
+                    "b) Cualquier acto o amenaza de violencia física, acoso, intimidación u otro comportamiento amenazante o disruptivo que ocurra en el lugar de trabajo.",
+                    "c) Solo incidentes que involucran el uso de armas de fuego dentro del edificio.",
+                    "d) Disputas personales entre empleados que ocurran fuera del horario laboral."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "2. ¿Qué se entiende por el concepto de 'NEXO' en la gestión de violencia laboral?",
+                options: [
+                    "a) El contrato legal que une el empleado con la empresa.",
+                    "b) La conexión lógica entre un evento violento y la seguridad de las personas en el entorno laboral o sus funciones, incluso fuera de la oficina física o del horario laboral.",
+                    "c) El sistema de cableado de las cámaras de seguridad.",
+                    "d) La relación de amistad entre los miembros del equipo multidisciplinario."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "3. El 'Lugar de Trabajo' abarca, según los estándares proactivos:",
+                options: [
+                    "a) Exclusivamente el escritorio u oficina asignada.",
+                    "b) El edificio corporativo y el estacionamiento únicamente.",
+                    "c) Oficinas físicas, trabajo virtual, traslados laborales, eventos patrocinados y reuniones de negocios así como vehículos corporativos y espacios patrocinados por el empleador (gimnasios corporativos, comedores, coworking).",
+                    "d) Cualquier lugar del mundo donde el empleado se encuentre de vacaciones."
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "4. ¿Qué es el Equipo de Gestión de Amenazas?",
+                options: [
+                    "a) El personal de guardias de seguridad física del edificio.",
+                    "b) Un grupo multidisciplinario (RRHH, Legal, Seguridad, Salud Mental) encargado de evaluar y gestionar alertas.",
+                    "c) La policía local encargada de responder a emergencias.",
+                    "d) El comité de ética."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "5. El enfoque 'Proactivo' de este estándar implica:",
+                options: [
+                    "a) Esperar a que ocurra un incidente para llamar a la policía.",
+                    "b) Detectar señales de advertencia e intervenir tempranamente para evitar la escalada de la violencia.",
+                    "c) Sancionar penalmente a los empleados descontentos de forma inmediata.",
+                    "d) Instalar vidrios blindados y cámaras en todas las oficinas sin evaluar el riesgo previo."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "6. ¿Cuál es el objetivo principal del Sistema Centralizado de Reporte?",
+                options: [
+                    "a) Hacer un ranking de los empleados menos productivos.",
+                    "b) Permitir que cualquier colaborador informe preocupaciones o comportamientos disruptivos de forma confidencial, anónima (si lo desea) y con acceso a un sistema de protección del denunciante.",
+                    "c) Publicar las denuncias en la cartelera de la empresa para que todos se enteren.",
+                    "d) Evitar que los empleados hablen con Recursos Humanos."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "7. En la tipología de violencia, la 'Violencia Tipo II' se refiere a la cometida por:",
+                options: [
+                    "a) Alguien que no tiene relación con el negocio (crimen externo).",
+                    "b) Un cliente, paciente o usuario hacia un empleado.",
+                    "c) Un empleado actual hacia otro compañero.",
+                    "d) Una pareja sentimental del empleado (violencia doméstica)."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "8. ¿Qué es la 'Conciencia Situacional'?",
+                options: [
+                    "a) Saber exactamente cuántas personas hay en el edificio.",
+                    "b) La capacidad de percibir, comprender y proyectar lo que ocurre en el entorno para detectar anomalías.",
+                    "c) Tener instalado un sistema de alarmas de última generación.",
+                    "d) Conocer de memoria el manual de procedimientos de la empresa."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "9. Seguridad en profundidad ¿Cuál es la 'Capa de Cebolla' más externa en la protección de activos humanos?",
+                options: [
+                    "a) El control de acceso biométrico.",
+                    "b) La política de selección de personal y la investigación de antecedentes (Screening).",
+                    "c) El uso de chalecos antibalas.",
+                    "d) La respuesta táctica de la policía."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "10. El 'Deber de Cuidado' de una organización significa:",
+                options: [
+                    "a) Proporcionar un seguro laboral a los empleados.",
+                    "b) La responsabilidad legal y ética de mantener un entorno libre de peligros reconocidos y violencia previsible.",
+                    "c) Darle cobertura médica a los empleados y cubrir los gastos ante un evento violento.",
+                    "d) Vigilar a los empleados durante su tiempo libre en sus hogares."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "11. ¿Qué define técnicamente al 'Mobbing'?",
+                options: [
+                    "a) Un desacuerdo puntual entre dos empleados sobre un proyecto.",
+                    "b) El acoso psicológico sistemático y recurrente hacia una persona para forzar su salida o desestabilizarla emocionalmente.",
+                    "c) Un despido justificado por bajo rendimiento.",
+                    "d) El ruido excesivo en las áreas de descanso."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "12. El término 'Bossing' se refiere específicamente a:",
+                options: [
+                    "a) Acoso realizado por compañeros de la misma jerarquía.",
+                    "b) Acoso vertical descendente, ejercido por un superior hacia un subordinado caracterizado habitualmente por la microgestión y exposición evitable.",
+                    "c) El liderazgo firme y orientado a resultados.",
+                    "d) La contratación de familiares en cargos directivos."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "13. ¿Qué es el 'Gaslighting' en el entorno laboral?",
+                options: [
+                    "a) Un tipo de iluminación deficiente que cause fatiga visual.",
+                    "b) Una forma de manipulación psicológica donde se hace dudar a la víctima de su propia memoria o percepción.",
+                    "c) El robo de suministros de limpieza.",
+                    "d) Una técnica de motivación para equipos de ventas."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "14. ¿Cuál de los siguientes es una 'Bandera Roja' de comportamiento?",
+                options: [
+                    "a) Un empleado que llega tarde una vez al mes.",
+                    "b) Un cambio brusco de personalidad acompañado de fijaciones con armas o actos de violencia masiva.",
+                    "c) Un colaborador que solicite vacaciones en temporada alta.",
+                    "d) El uso de ropa informal de color negro todos los días viernes."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "15. El 'Camino hacia la Violencia' sugiere que:",
+                options: [
+                    "a) Los actos de violencia son siempre impulsivos e impredecibles.",
+                    "b) Existe un proceso de ideación, planificación y preparación previa al acto violento que puede ser detectado.",
+                    "c) Solo las personas con enfermedades mentales cometen actos violentos.",
+                    "d) La violencia laboral desaparece si se ignora el conflicto."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "16. ¿Qué debe hacer un supervisor al detectar una amenaza velada como 'ya vas a ver quién soy'?",
+                options: [
+                    "a) Ignorarlo porque no hubo contacto físico.",
+                    "b) Desafiar al empleado para ver si cumple su amenaza.",
+                    "c) Reportarlo inmediatamente al equipo de gestión interdisciplinario para una evaluación umbral documentado el evento en un medio trazable.",
+                    "d) Esperar a la evaluación de desempeño anual para mencionarlo."
+                ],
+                correct: 2 // c
+            },
+            {
+                q: "17. El acoso sexual en el lugar de trabajo según el estándar incluye:",
+                options: [
+                    "a) Comportamientos verbales o físicos no deseados de naturaleza sexual que crean un entorno hostil en espacios físicos o digitales.",
+                    "b) Únicamente el contacto físico forzado.",
+                    "c) Charlas educativas sobre diversidad.",
+                    "d) Preguntar por el estado civil de una persona de forma respetuosa."
+                ],
+                correct: 0 // a
+            },
+            {
+                q: "18. La 'Externalización de la Culpa' es una señal de alerta porque:",
+                options: [
+                    "a) Indica que el empleado es muy responsable.",
+                    "b) El agresor justifica sus acciones volcando la responsabilidad en otros o en la empresa, eliminando sus propios límites éticos.",
+                    "c) Muestra que la empresa tiene procesos ineficientes.",
+                    "d) Es una técnica común de los mejores vendedores."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "19. El reporte de 'incidentes menores' es importante porque:",
+                options: [
+                    "a) Ayuda a llenar los registros estadísticos.",
+                    "b) Permite identificar patrones de conducta antes de que escalen a un incidente mayor y comprender la magnitud de pequeños desvíos reiterados (Efecto Iceberg).",
+                    "c) Justifica el presupuesto de seguridad física.",
+                    "d) Sirve para que los empleados se vigilen unos a otros por diversión."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "20. ¿Qué se recomienda hacer con una víctima de violencia doméstica que traslada su riesgo al trabajo?",
+                options: [
+                    "a) Despedirla para proteger a la empresa de ataques externos.",
+                    "b) Desarrollar un plan de seguridad personalizado (resguardo de datos, cambio de puesto, aviso a recepción).",
+                    "c) Ignorar el caso por ser un 'asunto privado'.",
+                    "d) Sugerirle que resuelva sus problemas personales en su casa."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "21. En un evento de 'Tirador Activo', el protocolo internacional reconocido es:",
+                options: [
+                    "a) Atacar, gritar, rendirse.",
+                    "b) Correr, Esconderse, Luchar (Run, Hide, Fight).",
+                    "c) Grabar con el celular para tener evidencia.",
+                    "d) Quedarse quieto y cerrar los ojos."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "22. ¿Cuándo se debe aplicar la opción 'LUCHAR' ante un atacante activo?",
+                options: [
+                    "a) Como primera medida para demostrar valentía.",
+                    "b) Únicamente como último recurso cuando la vida corre peligro inminente y la huida no es posible. Es mejor coordinar un ataque en equipo.",
+                    "c) Siempre que el empleado tenga entrenamiento básico en artes marciales.",
+                    "d) Nunca, bajo ninguna circunstancia."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "23. La 'Contratación Negligente' es un concepto legal que ocurre cuando:",
+                options: [
+                    "a) El empleado no cumple con sus objetivos de ventas.",
+                    "b) La empresa contrata a alguien con antecedentes violentos conocidos (o que debió conocer tras una investigación de antecedentes y referencias) y este daña a un tercero.",
+                    "c) Se contrata a alguien con un salario menor al mercado.",
+                    "d) Se olvida firmar el contrato de confidencialidad."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "24. El análisis del caso 'Abel Guzmán' (Peluquería Verdini, Bs As, 2024) demuestra que:",
+                options: [
+                    "a) El homicidio laboral fue un acto puramente impulsivo.",
+                    "b) Hubo un resentimiento acumulado y señales de alerta (conflictos por el uso de formol) que no fueron gestionadas proactivamente.",
+                    "c) La seguridad física falló porque no había detectores de metales en la entrada.",
+                    "d) Los homicidios laborales solo ocurren en grandes corporaciones."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "25. Una 'Investigación de Antecedentes' proactiva debe centrarse en:",
+                options: [
+                    "a) Verificar solo los títulos académicos del candidato.",
+                    "b) Identificar discrepancias en el historial laboral, antecedentes penales (según ley local) y rasgos de conducta disruptiva y de la documentación relevante para tomar una decisión informada.",
+                    "c) Analizar el nivel socioeconómico del candidato.",
+                    "d) Preguntar por las inclinaciones religiosas o políticas."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "26. La fase de 'Recuperación Post-Evento' busca:",
+                options: [
+                    "a) Reanudar las operaciones lo antes posible ignorando lo ocurrido.",
+                    "b) Brindar apoyo psicológico a las víctimas, gestionar la comunicación de crisis y analizar fallas del sistema para mejorar.",
+                    "c) Despedir a los testigos para evitar filtraciones a la prensa.",
+                    "d) Cobrar el seguro y cerrar la oficina permanentemente."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "27. En una entrevista de investigación por mala conducta, ¿cuándo se entrevista al sospechoso principal?",
+                options: [
+                    "a) Al principio, para que confiese rápido.",
+                    "b) Al final, después de haber recolectado y analizado toda la evidencia disponible.",
+                    "c) Nunca, para no violar sus derechos.",
+                    "d) En público, frente a sus compañeros para que sientan presión."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "28. La 'Debida Diligencia' requiere que la organización:",
+                options: [
+                    "a) Tenga el mejor sistema de videovigilancia del mercado.",
+                    "b) Demuestre un esfuerzo razonable y documentado para prevenir riesgos previsibles de violencia.",
+                    "c) No tenga ningún empleado descontento.",
+                    "d) Delegar toda la seguridad a una empresa externa sin supervisión."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "29. ¿Qué define a un 'Atacante Activo' como diferencia de un criminal común?",
+                options: [
+                    "a) Busca exclusivamente el beneficio económico mediante el robo.",
+                    "b) Está involucrado en matar o intentar matar personas en un área poblada, generalmente sin un patrón de selección de víctimas.",
+                    "c) Se retirará inmediatamente cuando llegue la policía.",
+                    "d) Siempre utilice explosivos de alto poder."
+                ],
+                correct: 1 // b
+            },
+            {
+                q: "30. Una política de 'No Tolerancia a la Violencia' efectiva debe:",
+                options: [
+                    "a) Ser automática y expulsar a cualquier persona por cualquier motivo sin investigar.",
+                    "b) Ser clara, comunicada a todos, y garantizar que cada informe será investigado con objetividad y respeto al proceso legal.",
+                    "c) Ser un secreto guardado por la alta dirección.",
+                    "d) Aplicarse solo a los empleados de bajo rango."
+                ],
+                correct: 1 // b
+            }
+        ];
+
+        // LÓGICA DE LA APLICACIÓN
+        let currentQuestionIndex = 0;
+        let userResponses = new Array(questions.length).fill(null); 
+        let score = 0;
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const infoScreen = document.getElementById('info-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackDiv = document.getElementById('feedback');
+        const btnNext = document.getElementById('btn-next');
+        const btnPrev = document.getElementById('btn-prev');
+        const progressBar = document.getElementById('progress-bar');
+        const qNumberSpan = document.getElementById('question-number');
+        const liveScoreSpan = document.getElementById('score-live');
+
+        function startQuiz() {
+            startScreen.style.display = 'none';
+            quizScreen.style.display = 'flex';
+            loadQuestion(0);
+        }
+
+        function loadQuestion(index) {
+            const q = questions[index];
+            questionText.textContent = q.q;
+            qNumberSpan.textContent = `Pregunta ${index + 1} de ${questions.length}`;
+            
+            const progress = ((index + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            optionsContainer.innerHTML = '';
+            feedbackDiv.style.display = 'none';
+            feedbackDiv.className = 'feedback-msg';
+
+            q.options.forEach((opt, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => selectOption(i);
+                
+                if (userResponses[index] !== null) {
+                    btn.classList.add('disabled');
+                    if (i === q.correct) {
+                        btn.classList.add('correct');
+                    }
+                    if (i === userResponses[index] && i !== q.correct) {
+                        btn.classList.add('incorrect');
+                    }
+                }
+                optionsContainer.appendChild(btn);
+            });
+
+            if (userResponses[index] !== null) {
+                showFeedback(userResponses[index] === q.correct, q.options[q.correct]);
+            }
+
+            btnPrev.disabled = index === 0;
+            if (index === questions.length - 1) {
+                btnNext.textContent = "Finalizar";
+                btnNext.onclick = finishQuiz;
+            } else {
+                btnNext.textContent = "Siguiente";
+                btnNext.onclick = nextQuestion;
+            }
+        }
+
+        function selectOption(selectedIndex) {
+            if (userResponses[currentQuestionIndex] !== null) return;
+
+            const q = questions[currentQuestionIndex];
+            userResponses[currentQuestionIndex] = selectedIndex;
+            
+            if (selectedIndex === q.correct) {
+                score++;
+                updateLiveScore();
+            }
+
+            const buttons = optionsContainer.children;
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.add('disabled');
+                if (i === q.correct) {
+                    buttons[i].classList.add('correct');
+                } else if (i === selectedIndex) {
+                    buttons[i].classList.add('incorrect');
+                }
+            }
+
+            showFeedback(selectedIndex === q.correct, q.options[q.correct]);
+        }
+
+        function showFeedback(isCorrect, correctText) {
+            feedbackDiv.style.display = 'block';
+            if (isCorrect) {
+                feedbackDiv.style.backgroundColor = '#d4edda';
+                feedbackDiv.style.color = '#155724';
+                feedbackDiv.textContent = "¡Correcto!";
+            } else {
+                feedbackDiv.style.backgroundColor = '#f8d7da';
+                feedbackDiv.style.color = '#721c24';
+                feedbackDiv.textContent = `Incorrecto. La respuesta correcta era: ${correctText}`;
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion(currentQuestionIndex);
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion(currentQuestionIndex);
+            }
+        }
+
+        function updateLiveScore() {
+            liveScoreSpan.textContent = `Aciertos: ${score}`;
+        }
+
+        function finishQuiz() {
+            quizScreen.style.display = 'none';
+            infoScreen.style.display = 'flex'; // Mostrar slide de info primero
+        }
+
+        function showResults() {
+            infoScreen.style.display = 'none';
+            resultsScreen.style.display = 'block';
+            generateReport();
+        }
+
+        function generateReport() {
+            const percentage = ((score / questions.length) * 100).toFixed(1);
+            document.getElementById('final-score').textContent = percentage;
+            document.getElementById('final-stats').textContent = `${score} de ${questions.length} respuestas correctas`;
+
+            const reportDiv = document.getElementById('detailed-report');
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Pregunta</th>
+                        <th>Tu Respuesta</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            
+            questions.forEach((q, i) => {
+                const userIndex = userResponses[i];
+                const isCorrect = userIndex === q.correct;
+                const userText = userIndex !== null ? q.options[userIndex] : "Sin responder";
+                const statusClass = isCorrect ? "status-ok" : "status-bad";
+                const statusText = isCorrect ? "CORRECTO" : `INCORRECTO (Era: ${q.options[q.correct]})`;
+
+                html += `<tr>
+                    <td>${i + 1}</td>
+                    <td>${q.q.substring(0, 50)}...</td>
+                    <td>${userText}</td>
+                    <td class="${statusClass}">${statusText}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table>`;
+            reportDiv.innerHTML = html;
+        }
+
+        function resetQuiz() {
+            if(confirm("¿Estás seguro de que quieres reiniciar el examen? Se perderá todo el progreso.")) {
+                currentQuestionIndex = 0;
+                score = 0;
+                userResponses.fill(null);
+                updateLiveScore();
+                resultsScreen.style.display = 'none';
+                infoScreen.style.display = 'none';
+                startScreen.style.display = 'flex'; // Vuelve a la portada
+            }
+        }
+    </script>
+</body>
+</html>
